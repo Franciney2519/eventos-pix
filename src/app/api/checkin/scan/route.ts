@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       status: ticket.status,
       lastCheckedInAt: lastCheckin?.checked_in_at ?? null,
       orderNumber: order?.order_number ?? null,
-      participantName: order?.profiles?.full_name ?? null,
+      participantName: ticket.attendee_name ?? order?.profiles?.full_name ?? null,
       participantEmail: order?.profiles?.email ?? null,
       participantPhone: order?.profiles?.phone ?? null,
     },

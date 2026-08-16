@@ -74,7 +74,7 @@ export async function getTicketsForBadges(supabase: DB, ticketIds: string[]): Pr
   const { data, error } = await supabase
     .from("tickets")
     .select(
-      "id, ticket_number, token, status, badge_printed_at, events(name, event_date, event_time, location), orders(profiles!orders_user_id_profiles_fkey(full_name))"
+      "id, ticket_number, token, status, badge_printed_at, attendee_name, events(name, event_date, event_time, location), orders(profiles!orders_user_id_profiles_fkey(full_name))"
     )
     .in("id", ticketIds);
 
@@ -88,7 +88,7 @@ export async function getTicketsForBadges(supabase: DB, ticketIds: string[]): Pr
       ticket_number: t.ticket_number,
       token: t.token,
       status: t.status,
-      participant_name: participant?.full_name ?? "-",
+      participant_name: t.attendee_name ?? participant?.full_name ?? "-",
       event_name: event.name,
       event_date: event.event_date,
       event_time: event.event_time,

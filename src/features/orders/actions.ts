@@ -24,9 +24,17 @@ export interface CreateOrderResult extends ActionResult {
 export async function createOrderWithProofAction(formData: FormData): Promise<CreateOrderResult> {
   const user = await requireUser();
 
+  let attendeeNames: unknown = [];
+  try {
+    attendeeNames = JSON.parse(String(formData.get("attendeeNames") ?? "[]"));
+  } catch {
+    attendeeNames = [];
+  }
+
   const parsed = createOrderSchema.safeParse({
     eventId: formData.get("eventId"),
     quantity: formData.get("quantity"),
+    attendeeNames,
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Dados inválidos" };
@@ -44,7 +52,7 @@ export async function createOrderWithProofAction(formData: FormData): Promise<Cr
   }
 
   const supabase = await createClient();
-  const { eventId, quantity } = parsed.data;
+  const { eventId, quantity, attendeeNames: names } = parsed.data;
 
   const event = await getEventById(supabase, eventId);
   if (!event) return { ok: false, error: "Evento não encontrado" };
@@ -72,6 +80,7 @@ export async function createOrderWithProofAction(formData: FormData): Promise<Cr
     quantity,
     unit_price: event.ticket_price,
     total_amount: totalAmount,
+    attendee_names: names,
   });
 
   const safeName = sanitizeFileName(file.name);

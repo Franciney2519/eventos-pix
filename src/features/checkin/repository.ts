@@ -111,6 +111,7 @@ export async function searchTicketsForCheckin(supabase: DB, eventId: string, que
       const haystack = [
         t.ticket_number,
         order.order_number,
+        t.attendee_name ?? "",
         order.profiles?.full_name ?? "",
         order.profiles?.email ?? "",
       ]
@@ -145,7 +146,7 @@ export async function listParticipantsForCheckin(supabase: DB, eventId: string):
     supabase
       .from("tickets")
       .select(
-        "id, ticket_number, status, orders(order_number, profiles!orders_user_id_profiles_fkey(full_name, email, phone))"
+        "id, ticket_number, status, attendee_name, orders(order_number, profiles!orders_user_id_profiles_fkey(full_name, email, phone))"
       )
       .eq("event_id", eventId)
       .order("ticket_number", { ascending: true }),
@@ -173,7 +174,7 @@ export async function listParticipantsForCheckin(supabase: DB, eventId: string):
       ticketNumber: t.ticket_number,
       status: t.status,
       orderNumber: order?.order_number ?? "",
-      participantName: order?.profiles?.full_name ?? "-",
+      participantName: t.attendee_name ?? order?.profiles?.full_name ?? "-",
       participantEmail: order?.profiles?.email ?? "",
       participantPhone: order?.profiles?.phone ?? null,
       checkins: (checkinsByTicket.get(t.id) ?? []).sort((a, b) => a.checkedInAt.localeCompare(b.checkedInAt)),
@@ -184,7 +185,9 @@ export async function listParticipantsForCheckin(supabase: DB, eventId: string):
 export async function listCheckinHistory(supabase: DB, eventId?: string) {
   let query = supabase
     .from("checkins")
-    .select("*, tickets(ticket_number, orders(order_number, profiles:profiles!orders_user_id_profiles_fkey(full_name)))")
+    .select(
+      "*, tickets(ticket_number, attendee_name, orders(order_number, profiles:profiles!orders_user_id_profiles_fkey(full_name)))"
+    )
     .order("checked_in_at", { ascending: false })
     .limit(200);
 

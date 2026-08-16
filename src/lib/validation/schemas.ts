@@ -50,10 +50,18 @@ export const eventSchema = z.object({
 });
 export type EventInput = z.infer<typeof eventSchema>;
 
-export const createOrderSchema = z.object({
-  eventId: z.string().uuid(),
-  quantity: z.coerce.number().int().min(1, "Escolha ao menos 1 ingresso"),
-});
+export const createOrderSchema = z
+  .object({
+    eventId: z.string().uuid(),
+    quantity: z.coerce.number().int().min(1, "Escolha ao menos 1 ingresso"),
+    attendeeNames: z
+      .array(z.string().trim().min(2, "Informe o nome completo de cada participante"))
+      .min(1, "Informe o nome de cada participante"),
+  })
+  .refine((data) => data.attendeeNames.length === data.quantity, {
+    message: "Informe um nome para cada ingresso",
+    path: ["attendeeNames"],
+  });
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 
 export const reviewOrderSchema = z.object({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { Copy, Loader2 } from "lucide-react";
 import type { EventRow } from "@/types/database";
@@ -23,6 +23,8 @@ export function OrderFlow({
   const { show } = useToast();
   const [step, setStep] = useState<1 | 2>(1);
   const [quantity, setQuantity] = useState(1);
+  const [attendeeNames, setAttendeeNames] = useState<string[]>([""]);
+  const [namesError, setNamesError] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +33,31 @@ export function OrderFlow({
   const max = Math.max(0, Math.min(event.max_tickets_per_order, availableSeats));
   const total = computeOrderTotal(event.ticket_price, quantity);
   const canOrder = event.status === "OPEN" && max > 0;
+
+  useEffect(() => {
+    setAttendeeNames((prev) => {
+      const next = prev.slice(0, quantity);
+      while (next.length < quantity) next.push("");
+      return next;
+    });
+  }, [quantity]);
+
+  const updateAttendeeName = (index: number, value: string) => {
+    setAttendeeNames((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  };
+
+  const goToPayment = () => {
+    if (attendeeNames.some((name) => name.trim().length < 2)) {
+      setNamesError("Informe o nome completo de cada participante");
+      return;
+    }
+    setNamesError(null);
+    setStep(2);
+  };
 
   const copyPixKey = async () => {
     try {
@@ -52,6 +79,7 @@ export function OrderFlow({
     const formData = new FormData();
     formData.set("eventId", event.id);
     formData.set("quantity", String(quantity));
+    formData.set("attendeeNames", JSON.stringify(attendeeNames.map((name) => name.trim())));
     formData.set("proof", file);
 
     startTransition(async () => {
@@ -94,6 +122,23 @@ export function OrderFlow({
           <p className="mt-1 text-xs text-gray-400">Máximo {max} ingresso(s) nesta compra</p>
         </div>
 
+        <div className="space-y-2 border-t border-gray-100 pt-4">
+          <p className="label mb-0">
+            Nome no crachá {quantity > 1 ? "de cada participante" : ""}
+          </p>
+          {attendeeNames.map((name, i) => (
+            <input
+              key={i}
+              type="text"
+              value={name}
+              onChange={(e) => updateAttendeeName(i, e.target.value)}
+              placeholder={quantity > 1 ? `Nome completo do ingresso ${i + 1}` : "Nome completo"}
+              className="input"
+            />
+          ))}
+          {namesError && <p className="text-sm text-danger-600">{namesError}</p>}
+        </div>
+
         <div className="flex items-center justify-between border-t border-gray-100 pt-4">
           <div>
             <p className="text-xs text-gray-400">Valor unitário</p>
@@ -105,7 +150,7 @@ export function OrderFlow({
           </div>
         </div>
 
-        <button className="btn-primary w-full" onClick={() => setStep(2)}>
+        <button className="btn-primary w-full" onClick={goToPayment}>
           Continuar
         </button>
       </div>

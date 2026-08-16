@@ -57,6 +57,7 @@ export async function createOrder(
     quantity: number;
     unit_price: number;
     total_amount: number;
+    attendee_names: string[];
   }
 ): Promise<OrderRow> {
   const { data, error } = await supabase.from("orders").insert(input).select("*").single();

@@ -56,6 +56,7 @@ export interface OrderRow {
   rejected_at: string | null;
   rejected_by: string | null;
   rejection_reason: string | null;
+  attendee_names: string[] | null;
 }
 
 export interface PaymentProofRow {
@@ -84,6 +85,7 @@ export interface TicketRow {
   cancelled_at: string | null;
   created_at: string;
   badge_printed_at: string | null;
+  attendee_name: string | null;
 }
 
 export interface CheckinRow {
