@@ -63,14 +63,14 @@ export function BadgeSheet({ tickets, appUrl }: { tickets: TicketForBadge[]; app
           <div
             key={t.id}
             className="badge-page relative overflow-hidden bg-gray-900 shadow-lg print:shadow-none"
-            style={{
-              width: "100mm",
-              height: "150mm",
-              backgroundImage: "url(/badges/identidade-template.png)",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
+            style={{ width: "100mm", height: "150mm" }}
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/badges/identidade-template.png"
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
             <div
               className="absolute flex items-center overflow-hidden text-ellipsis whitespace-nowrap font-semibold uppercase tracking-wide text-gray-900"
               style={{

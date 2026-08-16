@@ -106,8 +106,10 @@ export async function createOrderWithProofAction(formData: FormData): Promise<Cr
   // Best-effort — the order is already saved either way; failures are logged.
   try {
     await sendNewOrderNotificationEmail(order.id);
-  } catch {
-    // sendNewOrderNotificationEmail records the failure in email_logs itself
+  } catch (err) {
+    // sendAndLog already records failures in email_logs; this logs errors
+    // thrown before that point (e.g. missing profile) which are otherwise lost.
+    console.error("Failed to send new-order notification email for order", order.id, err);
   }
 
   revalidatePath("/minhas-inscricoes");
@@ -133,8 +135,10 @@ export async function approveOrderAction(orderId: string): Promise<ActionResult>
   // Best-effort email send — approval already committed, failure is logged.
   try {
     await sendTicketsIssuedEmail(orderId);
-  } catch {
-    // sendTicketsIssuedEmail records the failure in email_logs itself
+  } catch (err) {
+    // sendAndLog already records failures in email_logs; this logs errors
+    // thrown before that point (e.g. missing profile) which are otherwise lost.
+    console.error("Failed to send tickets-issued email for order", orderId, err);
   }
 
   revalidatePath("/admin/solicitacoes");
@@ -168,8 +172,8 @@ export async function rejectOrderAction(formData: FormData): Promise<ActionResul
 
   try {
     await sendOrderRejectedEmail(parsed.data.orderId);
-  } catch {
-    // logged internally
+  } catch (err) {
+    console.error("Failed to send order-rejected email for order", parsed.data.orderId, err);
   }
 
   revalidatePath("/admin/solicitacoes");

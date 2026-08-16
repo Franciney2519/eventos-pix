@@ -32,8 +32,10 @@ export async function resendTicketEmailAction(orderId: string): Promise<ActionRe
   try {
     await sendTicketsIssuedEmail(orderId);
     return { ok: true };
-  } catch {
-    return { ok: false, error: "Não foi possível reenviar o e-mail" };
+  } catch (err) {
+    console.error("Failed to resend tickets-issued email for order", orderId, err);
+    const detail = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `Não foi possível reenviar o e-mail (${detail})` };
   }
 }
 
