@@ -36,6 +36,11 @@ const EVENT_STATUS_MAP: Record<string, { label: string; tone: BadgeTone }> = {
   CANCELLED: { label: "Cancelado", tone: "danger" },
 };
 
+const EMAIL_STATUS_MAP: Record<string, { label: string; tone: BadgeTone }> = {
+  SENT: { label: "Enviado", tone: "success" },
+  FAILED: { label: "Falhou", tone: "danger" },
+};
+
 function Badge({ label, tone }: { label: string; tone: BadgeTone }) {
   return <span className={clsx(TONE_CLASS[tone])}>{label}</span>;
 }
@@ -57,5 +62,10 @@ export function TicketStatusBadge({ status }: { status: string }) {
 
 export function EventStatusBadge({ status }: { status: string }) {
   const cfg = EVENT_STATUS_MAP[status] ?? { label: status, tone: "gray" as const };
+  return <Badge {...cfg} />;
+}
+
+export function EmailStatusBadge({ status }: { status: string }) {
+  const cfg = EMAIL_STATUS_MAP[status] ?? { label: status, tone: "gray" as const };
   return <Badge {...cfg} />;
 }
