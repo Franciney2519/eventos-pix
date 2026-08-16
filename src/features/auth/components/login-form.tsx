@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginInput } from "@/lib/validation/schemas";
 import { signInAction } from "@/features/auth/actions";
 import { FormField } from "@/components/ui/form-field";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useToast } from "@/components/ui/toast";
 import { Loader2 } from "lucide-react";
 
@@ -47,7 +48,7 @@ export function LoginForm() {
         <input id="email" type="email" className="input" placeholder="voce@email.com" {...register("email")} />
       </FormField>
       <FormField label="Senha" htmlFor="password" error={errors.password?.message}>
-        <input id="password" type="password" className="input" placeholder="••••••••" {...register("password")} />
+        <PasswordInput id="password" placeholder="••••••••" {...register("password")} />
       </FormField>
 
       {serverError && <p className="text-sm text-danger-600">{serverError}</p>}

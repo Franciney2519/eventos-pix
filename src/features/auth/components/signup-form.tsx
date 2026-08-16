@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, type SignUpInput } from "@/lib/validation/schemas";
 import { signUpAction } from "@/features/auth/actions";
 import { FormField } from "@/components/ui/form-field";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useToast } from "@/components/ui/toast";
 import { Loader2 } from "lucide-react";
 
@@ -54,10 +55,10 @@ export function SignUpForm() {
         <input id="phone" className="input" placeholder="(00) 00000-0000" {...register("phone")} />
       </FormField>
       <FormField label="Senha" htmlFor="password" error={errors.password?.message}>
-        <input id="password" type="password" className="input" placeholder="Mínimo 8 caracteres" {...register("password")} />
+        <PasswordInput id="password" placeholder="Mínimo 8 caracteres" {...register("password")} />
       </FormField>
       <FormField label="Confirmar senha" htmlFor="confirmPassword" error={errors.confirmPassword?.message}>
-        <input id="confirmPassword" type="password" className="input" placeholder="Repita a senha" {...register("confirmPassword")} />
+        <PasswordInput id="confirmPassword" placeholder="Repita a senha" {...register("confirmPassword")} />
       </FormField>
 
       {serverError && <p className="text-sm text-danger-600">{serverError}</p>}
