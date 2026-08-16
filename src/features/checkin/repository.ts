@@ -1,5 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getManausTodayUtcRange, isSameManausDay } from "@/lib/checkin/timezone";
 
 type DB = SupabaseClient;
 
@@ -15,7 +16,15 @@ export async function listCheckinEvents(supabase: DB) {
 }
 
 export async function getEventCheckinStats(supabase: DB, eventId: string) {
-  const [{ count: checkedIn }, { data: approvedOrders }] = await Promise.all([
+  const { startIso, endIso } = getManausTodayUtcRange();
+
+  const [{ count: checkedInToday }, { count: checkedInTotal }, { data: approvedOrders }] = await Promise.all([
+    supabase
+      .from("checkins")
+      .select("id", { count: "exact", head: true })
+      .eq("event_id", eventId)
+      .gte("checked_in_at", startIso)
+      .lt("checked_in_at", endIso),
     supabase.from("checkins").select("id", { count: "exact", head: true }).eq("event_id", eventId),
     supabase.from("orders").select("quantity").eq("event_id", eventId).eq("payment_status", "APPROVED"),
   ]);
@@ -23,7 +32,8 @@ export async function getEventCheckinStats(supabase: DB, eventId: string) {
   const approvedTickets = (approvedOrders ?? []).reduce((sum, o) => sum + o.quantity, 0);
 
   return {
-    checkedIn: checkedIn ?? 0,
+    checkedIn: checkedInToday ?? 0,
+    checkedInTotal: checkedInTotal ?? 0,
     approvedTickets,
   };
 }
@@ -40,19 +50,55 @@ export async function findTicketByToken(supabase: DB, eventId: string, token: st
   return data;
 }
 
+/** Most recent check-in for a ticket, or null if it has never been scanned in. */
+export async function getLastCheckinForTicket(supabase: DB, ticketId: string) {
+  const { data, error } = await supabase
+    .from("checkins")
+    .select("checked_in_at")
+    .eq("ticket_id", ticketId)
+    .order("checked_in_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+/** Map of ticket_id -> most recent check-in timestamp, for a whole event. */
+export async function getLastCheckinsByTicket(supabase: DB, eventId: string): Promise<Map<string, string>> {
+  const { data, error } = await supabase
+    .from("checkins")
+    .select("ticket_id, checked_in_at")
+    .eq("event_id", eventId)
+    .order("checked_in_at", { ascending: true });
+
+  if (error) throw error;
+
+  const map = new Map<string, string>();
+  for (const row of data ?? []) {
+    map.set(row.ticket_id, row.checked_in_at); // later rows overwrite earlier ones -> latest wins
+  }
+  return map;
+}
+
 export async function searchTicketsForCheckin(supabase: DB, eventId: string, query: string) {
   const trimmed = query.trim().toLowerCase();
   if (!trimmed) return [];
 
   // Small dataset per event (tens to a few hundred tickets) — fetch and
   // filter in memory rather than fighting Postgrest's join-filter syntax.
-  const { data, error } = await supabase
-    .from("tickets")
-    .select("*, orders!inner(order_number, user_id, profiles:profiles!orders_user_id_profiles_fkey(full_name, email))")
-    .eq("event_id", eventId)
-    .limit(1000);
+  const [{ data, error }, lastCheckins] = await Promise.all([
+    supabase
+      .from("tickets")
+      .select("*, orders!inner(order_number, user_id, profiles:profiles!orders_user_id_profiles_fkey(full_name, email))")
+      .eq("event_id", eventId)
+      .limit(1000),
+    getLastCheckinsByTicket(supabase, eventId),
+  ]);
 
   if (error) throw error;
+
+  const nowIso = new Date().toISOString();
 
   return (data ?? [])
     .filter((t) => {
@@ -70,7 +116,14 @@ export async function searchTicketsForCheckin(supabase: DB, eventId: string, que
         .toLowerCase();
       return haystack.includes(trimmed);
     })
-    .slice(0, 25);
+    .slice(0, 25)
+    .map((t) => {
+      const lastCheckin = lastCheckins.get(t.id);
+      return {
+        ...t,
+        alreadyCheckedInToday: lastCheckin ? isSameManausDay(lastCheckin, nowIso) : false,
+      };
+    });
 }
 
 export async function listCheckinHistory(supabase: DB, eventId?: string) {

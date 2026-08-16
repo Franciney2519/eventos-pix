@@ -8,8 +8,8 @@ import { extractTokenFromScan } from "@/lib/checkin/extract-token";
 import { useToast } from "@/components/ui/toast";
 
 interface ScanResult {
-  outcome: "OK" | "TICKET_NOT_FOUND" | "TICKET_ALREADY_USED" | "TICKET_CANCELLED";
-  ticket?: { id: string; ticketNumber: string; status: string; usedAt: string | null; orderNumber: string | null };
+  outcome: "OK" | "TICKET_NOT_FOUND" | "ALREADY_CHECKED_IN_TODAY" | "TICKET_CANCELLED";
+  ticket?: { id: string; ticketNumber: string; status: string; lastCheckedInAt: string | null; orderNumber: string | null };
 }
 
 interface SearchResult {
@@ -18,6 +18,7 @@ interface SearchResult {
   status: string;
   orderNumber: string;
   participantName: string;
+  alreadyCheckedInToday: boolean;
 }
 
 export function CheckinPanel({ eventId, checkedIn, approvedTickets }: { eventId: string; checkedIn: number; approvedTickets: number }) {
@@ -58,7 +59,7 @@ export function CheckinPanel({ eventId, checkedIn, approvedTickets }: { eventId:
       });
       const data = await res.json();
       if (!data.ok || !data.success) {
-        show(data.message === "TICKET_ALREADY_USED" ? "Ingresso já utilizado" : "Não foi possível confirmar entrada", "error");
+        show(data.message === "ALREADY_CHECKED_IN_TODAY" ? "Check-in já feito hoje para este ingresso" : "Não foi possível confirmar entrada", "error");
         return;
       }
       show(`Entrada confirmada — ${data.ticketNumber}`, "success");
@@ -91,7 +92,7 @@ export function CheckinPanel({ eventId, checkedIn, approvedTickets }: { eventId:
           <p className="text-2xl font-semibold text-gray-900">
             {checkedIn} / {approvedTickets}
           </p>
-          <p className="text-sm text-gray-500">presentes</p>
+          <p className="text-sm text-gray-500">presentes hoje</p>
         </div>
         {!scanning && (
           <button className="btn-primary" onClick={() => { setScanning(true); setResult(null); }}>
@@ -142,12 +143,14 @@ export function CheckinPanel({ eventId, checkedIn, approvedTickets }: { eventId:
                     {t.ticketNumber} · Pedido {t.orderNumber}
                   </p>
                 </div>
-                {t.status === "AVAILABLE" ? (
+                {t.status === "CANCELLED" ? (
+                  <span className="text-xs text-gray-400">Cancelado</span>
+                ) : t.alreadyCheckedInToday ? (
+                  <span className="text-xs text-gray-400">Já fez check-in hoje</span>
+                ) : (
                   <button className="btn-secondary !px-3 !py-1.5 text-xs" disabled={pending} onClick={() => confirmEntry(t.id, "MANUAL")}>
                     Registrar check-in
                   </button>
-                ) : (
-                  <span className="text-xs text-gray-400">{t.status === "USED" ? "Já utilizado" : "Cancelado"}</span>
                 )}
               </li>
             ))}
@@ -186,13 +189,16 @@ function ScanResultView({
     );
   }
 
-  if (result.outcome === "TICKET_ALREADY_USED") {
+  if (result.outcome === "ALREADY_CHECKED_IN_TODAY") {
     return (
       <div className="flex flex-col items-center gap-2 py-4 text-center">
         <AlertTriangle size={36} className="text-danger-500" />
-        <p className="font-semibold text-danger-600">Ingresso já utilizado</p>
+        <p className="font-semibold text-danger-600">Check-in já feito hoje</p>
         <p className="font-mono text-sm text-gray-500">{result.ticket?.ticketNumber}</p>
-        {result.ticket?.usedAt && <p className="text-xs text-gray-400">Entrada às {new Date(result.ticket.usedAt).toLocaleTimeString("pt-BR")}</p>}
+        {result.ticket?.lastCheckedInAt && (
+          <p className="text-xs text-gray-400">Entrada às {new Date(result.ticket.lastCheckedInAt).toLocaleTimeString("pt-BR")}</p>
+        )}
+        <p className="text-xs text-gray-400">Válido novamente amanhã, se o evento continuar.</p>
       </div>
     );
   }

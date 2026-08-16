@@ -25,6 +25,7 @@ export async function GET(request: Request) {
       status: t.status,
       orderNumber: (t.orders as unknown as { order_number: string }).order_number,
       participantName: (t.orders as unknown as { profiles: { full_name: string } | null }).profiles?.full_name ?? "",
+      alreadyCheckedInToday: t.alreadyCheckedInToday,
     })),
   });
 }
