@@ -21,7 +21,7 @@ export default async function AdminDashboardPage() {
         <p className="text-sm text-gray-500">Visão geral de todos os eventos.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Metric icon={Users} label="Usuários" value={indicators.totalUsers} />
         <Metric icon={ClipboardList} label="Pedidos" value={indicators.totalOrders} />
         <Metric icon={Clock} label="Pagamentos pendentes" value={indicators.pendingPayments} tone="warning" />

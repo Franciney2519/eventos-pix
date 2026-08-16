@@ -25,50 +25,82 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
         <p className="text-sm text-gray-500">Indicadores gerais e exportação de dados.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Total de usuários" value={indicators.totalUsers} />
         <Stat label="Total de pedidos" value={indicators.totalOrders} />
         <Stat label="Total de ingressos" value={indicators.totalTickets} />
-        <Stat label="Pagamentos aprovados" value={indicators.approvedPayments} />
+        <Stat label="Pagamentos aprovados" value={indicators.approvedPayments} hint={`${indicators.approvedPayments} de ${indicators.totalOrders} pedidos`} />
         <Stat label="Pagamentos pendentes" value={indicators.pendingPayments} />
-        <Stat label="Receita confirmada" value={formatCurrencyBRL(indicators.confirmedRevenue)} />
+        <Stat
+          label="Receita confirmada"
+          value={formatCurrencyBRL(indicators.confirmedRevenue)}
+          hint={`${indicators.approvedPayments} pagamentos aprovados`}
+        />
         <Stat label="Check-ins" value={indicators.checkins} />
-        <Stat label="Taxa de comparecimento" value={`${attendanceRate}%`} />
+        <AttendanceStat rate={attendanceRate} checkins={indicators.checkins} total={indicators.totalTickets} />
       </div>
 
       <div className="card space-y-4">
-        <h2 className="font-semibold text-gray-900">Exportar CSV</h2>
-        <form className="flex flex-wrap items-center gap-3">
-          <select name="eventId" defaultValue={searchParams.eventId ?? ""} className="input max-w-xs">
-            <option value="">Todos os eventos</option>
-            {events.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.name}
-              </option>
-            ))}
-          </select>
-        </form>
-        <div className="flex flex-wrap gap-3">
-          {REPORTS.map((r) => (
-            <a
-              key={r.type}
-              href={`/api/admin/relatorios/export?type=${r.type}${searchParams.eventId ? `&eventId=${searchParams.eventId}` : ""}`}
-              className="btn-secondary"
-            >
-              <Download size={16} /> {r.label}
-            </a>
-          ))}
+        <div>
+          <h2 className="font-semibold text-gray-900">Exportar dados</h2>
+          <p className="text-xs text-gray-500">Baixe um CSV com os dados do evento e relatório selecionados.</p>
         </div>
+        <form action="/api/admin/relatorios/export" method="get" className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+          <div>
+            <label htmlFor="eventId" className="label">
+              Evento
+            </label>
+            <select id="eventId" name="eventId" defaultValue={searchParams.eventId ?? ""} className="input">
+              <option value="">Todos os eventos</option>
+              {events.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="type" className="label">
+              Tipo de relatório
+            </label>
+            <select id="type" name="type" defaultValue="orders" className="input">
+              {REPORTS.map((r) => (
+                <option key={r.type} value={r.type}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button type="submit" className="btn-primary">
+            <Download size={16} /> Exportar CSV
+          </button>
+        </form>
       </div>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string | number }) {
+function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
     <div className="card">
-      <p className="text-xl font-semibold text-gray-900">{value}</p>
-      <p className="text-xs text-gray-500">{label}</p>
+      <p className="text-xs font-medium text-gray-500">{label}</p>
+      <p className="mt-1.5 text-2xl font-semibold text-gray-900">{value}</p>
+      {hint && <p className="mt-1.5 text-xs text-gray-500">{hint}</p>}
+    </div>
+  );
+}
+
+function AttendanceStat({ rate, checkins, total }: { rate: number; checkins: number; total: number }) {
+  return (
+    <div className="card">
+      <p className="text-xs font-medium text-gray-500">Taxa de comparecimento</p>
+      <p className="mt-1.5 text-2xl font-semibold text-gray-900">{rate}%</p>
+      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+        <div className="h-full rounded-full bg-brand-600" style={{ width: `${Math.min(rate, 100)}%` }} />
+      </div>
+      <p className="mt-1.5 text-xs text-gray-500">
+        {checkins} de {total} ingressos utilizados
+      </p>
     </div>
   );
 }

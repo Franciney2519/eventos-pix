@@ -53,7 +53,7 @@ export function TicketsTable({ tickets }: { tickets: TicketRowData[] }) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-gray-500">{selected.size} selecionado(s)</p>
         <button className="btn-primary" disabled={selected.size === 0} onClick={generateBadges}>
           <IdCard size={16} /> {anySelectedAlreadyPrinted ? "Gerar / reimprimir crachás" : "Gerar crachás"}

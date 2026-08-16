@@ -19,8 +19,9 @@ export default async function AdminTicketsPage({ searchParams }: { searchParams:
     issued_at: t.issued_at,
     eventName: (t.events as unknown as { name: string } | null)?.name,
     orderNumber: (t.orders as unknown as { order_number: string } | null)?.order_number,
-    participantName: (t.orders as unknown as { profiles: { full_name: string } | null } | null)?.profiles
-      ?.full_name,
+    participantName:
+      t.attendee_name ??
+      (t.orders as unknown as { profiles: { full_name: string } | null } | null)?.profiles?.full_name,
     badgePrintedAt: t.badge_printed_at,
   }));
 
@@ -31,7 +32,7 @@ export default async function AdminTicketsPage({ searchParams }: { searchParams:
         <p className="text-sm text-gray-500">Todos os ingressos emitidos na plataforma. Selecione para gerar crachás.</p>
       </div>
 
-      <form className="flex gap-2">
+      <form className="flex flex-wrap gap-2">
         <select name="eventId" defaultValue={searchParams.eventId ?? ""} className="input max-w-xs">
           <option value="">Todos os eventos</option>
           {events.map((e) => (

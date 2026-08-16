@@ -25,7 +25,7 @@ export default async function AdminCheckinsPage({ searchParams }: { searchParams
         <p className="text-sm text-gray-500">Acompanhe a presença confirmada em cada evento.</p>
       </div>
 
-      <form className="flex gap-2">
+      <form className="flex flex-wrap gap-2">
         <select name="eventId" defaultValue={eventId} className="input max-w-xs">
           {events.map((e) => (
             <option key={e.id} value={e.id}>
@@ -39,7 +39,7 @@ export default async function AdminCheckinsPage({ searchParams }: { searchParams
       </form>
 
       {indicators && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Stat label="Capacidade" value={indicators.capacity} />
           <Stat label="Ingressos emitidos" value={indicators.ticketsIssued} />
           <Stat label="Check-ins realizados" value={indicators.checkins} />
@@ -64,13 +64,16 @@ export default async function AdminCheckinsPage({ searchParams }: { searchParams
               {history.map((c) => {
                 const ticket = c.tickets as unknown as {
                   ticket_number: string;
+                  attendee_name: string | null;
                   orders: { profiles: { full_name: string } | null } | null;
                 } | null;
                 return (
                   <tr key={c.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
                     <td className="px-5 py-3 text-gray-500">{formatDateTime(c.checked_in_at)}</td>
                     <td className="px-5 py-3 font-mono text-gray-900">{ticket?.ticket_number}</td>
-                    <td className="px-5 py-3 text-gray-700">{ticket?.orders?.profiles?.full_name}</td>
+                    <td className="px-5 py-3 text-gray-700">
+                      {ticket?.attendee_name ?? ticket?.orders?.profiles?.full_name}
+                    </td>
                     <td className="px-5 py-3 text-gray-500">{c.source === "QR" ? "QR Code" : "Manual"}</td>
                   </tr>
                 );
