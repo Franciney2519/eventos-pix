@@ -21,6 +21,7 @@ function parseEventForm(formData: FormData) {
     max_tickets_per_order: formData.get("max_tickets_per_order") || 6,
     pix_key: formData.get("pix_key"),
     pix_holder_name: formData.get("pix_holder_name"),
+    payment_instructions: formData.get("payment_instructions") || null,
     image_url: formData.get("image_url") || "",
     status: formData.get("status"),
   });

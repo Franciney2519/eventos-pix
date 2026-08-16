@@ -82,6 +82,17 @@ export function EventForm({ event }: { event?: EventRow }) {
         <Field label="Nome do favorecido" name="pix_holder_name" defaultValue={event?.pix_holder_name} required />
       </div>
 
+      <div>
+        <label className="label">Observações de pagamento (opcional)</label>
+        <textarea
+          name="payment_instructions"
+          defaultValue={event?.payment_instructions ?? ""}
+          rows={4}
+          className="input"
+          placeholder="Ex: dados bancários adicionais, instrução para anexar o comprovante..."
+        />
+      </div>
+
       <Field label="URL da imagem de capa (opcional)" name="image_url" defaultValue={event?.image_url ?? ""} placeholder="https://..." />
 
       {error && <p className="text-sm text-danger-600">{error}</p>}

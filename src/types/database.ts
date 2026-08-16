@@ -33,6 +33,7 @@ export interface EventRow {
   max_tickets_per_order: number;
   pix_key: string;
   pix_holder_name: string;
+  payment_instructions: string | null;
   image_url: string | null;
   status: EventStatus;
   created_at: string;

@@ -45,6 +45,7 @@ export const eventSchema = z.object({
   max_tickets_per_order: z.coerce.number().int().positive().max(50).default(6),
   pix_key: z.string().trim().min(3, "Informe a chave PIX"),
   pix_holder_name: z.string().trim().min(3, "Informe o nome do favorecido"),
+  payment_instructions: z.string().trim().max(2000).optional().nullable(),
   image_url: z.string().trim().url().optional().nullable().or(z.literal("")),
   status: z.enum(["DRAFT", "OPEN", "CLOSED", "FINISHED", "CANCELLED"]),
 });

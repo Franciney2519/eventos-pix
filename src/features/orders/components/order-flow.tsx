@@ -176,6 +176,9 @@ export function OrderFlow({
         </div>
         <p className="mt-3 text-xs text-gray-400">Favorecido</p>
         <p className="font-medium text-gray-900">{event.pix_holder_name}</p>
+        {event.payment_instructions && (
+          <p className="mt-3 whitespace-pre-line text-sm text-gray-600">{event.payment_instructions}</p>
+        )}
       </div>
 
       <div>
