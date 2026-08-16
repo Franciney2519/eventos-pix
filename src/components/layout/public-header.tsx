@@ -5,6 +5,7 @@ import { signOutAction } from "@/features/auth/actions";
 
 export async function PublicHeader() {
   const user = await getSessionUser();
+  const isStaff = user?.profile.role === "ADMIN" || user?.profile.role === "CHECKIN";
 
   return (
     <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/90 backdrop-blur">
@@ -17,14 +18,18 @@ export async function PublicHeader() {
         </Link>
 
         <nav className="flex items-center gap-2 text-sm">
-          <Link href="/eventos" className="rounded-lg px-3 py-2 font-medium text-gray-600 hover:bg-gray-100">
-            Eventos
-          </Link>
+          {!isStaff && (
+            <Link href="/eventos" className="rounded-lg px-3 py-2 font-medium text-gray-600 hover:bg-gray-100">
+              Eventos
+            </Link>
+          )}
           {user ? (
             <>
-              <Link href="/minha-conta" className="rounded-lg px-3 py-2 font-medium text-gray-600 hover:bg-gray-100">
-                Minha conta
-              </Link>
+              {!isStaff && (
+                <Link href="/minha-conta" className="rounded-lg px-3 py-2 font-medium text-gray-600 hover:bg-gray-100">
+                  Minha conta
+                </Link>
+              )}
               {user.profile.role === "ADMIN" && (
                 <Link href="/admin" className="rounded-lg px-3 py-2 font-medium text-gray-600 hover:bg-gray-100">
                   Admin
