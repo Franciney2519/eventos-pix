@@ -126,6 +126,59 @@ export async function searchTicketsForCheckin(supabase: DB, eventId: string, que
     });
 }
 
+export interface ParticipantForCheckin {
+  id: string;
+  ticketNumber: string;
+  status: string;
+  orderNumber: string;
+  participantName: string;
+  participantEmail: string;
+  participantPhone: string | null;
+  checkins: { checkedInAt: string; source: string }[];
+}
+
+/** Full roster for an event — every issued ticket, with its complete check-in history (all days). */
+export async function listParticipantsForCheckin(supabase: DB, eventId: string): Promise<ParticipantForCheckin[]> {
+  const [{ data: tickets, error }, { data: checkins, error: checkinsError }] = await Promise.all([
+    supabase
+      .from("tickets")
+      .select(
+        "id, ticket_number, status, orders(order_number, profiles!orders_user_id_profiles_fkey(full_name, email, phone))"
+      )
+      .eq("event_id", eventId)
+      .order("ticket_number", { ascending: true }),
+    supabase.from("checkins").select("ticket_id, checked_in_at, source").eq("event_id", eventId),
+  ]);
+
+  if (error) throw error;
+  if (checkinsError) throw checkinsError;
+
+  const checkinsByTicket = new Map<string, { checkedInAt: string; source: string }[]>();
+  for (const c of checkins ?? []) {
+    const list = checkinsByTicket.get(c.ticket_id) ?? [];
+    list.push({ checkedInAt: c.checked_in_at, source: c.source });
+    checkinsByTicket.set(c.ticket_id, list);
+  }
+
+  return (tickets ?? []).map((t) => {
+    const order = t.orders as unknown as {
+      order_number: string;
+      profiles: { full_name: string; email: string; phone: string | null } | null;
+    } | null;
+
+    return {
+      id: t.id,
+      ticketNumber: t.ticket_number,
+      status: t.status,
+      orderNumber: order?.order_number ?? "",
+      participantName: order?.profiles?.full_name ?? "-",
+      participantEmail: order?.profiles?.email ?? "",
+      participantPhone: order?.profiles?.phone ?? null,
+      checkins: (checkinsByTicket.get(t.id) ?? []).sort((a, b) => a.checkedInAt.localeCompare(b.checkedInAt)),
+    };
+  });
+}
+
 export async function listCheckinHistory(supabase: DB, eventId?: string) {
   let query = supabase
     .from("checkins")

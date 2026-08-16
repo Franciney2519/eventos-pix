@@ -13,6 +13,14 @@ export function isSameManausDay(isoA: string, isoB: string): boolean {
   return toManausDateKey(isoA) === toManausDateKey(isoB);
 }
 
+/** Adds N days to a YYYY-MM-DD date key, returning a new date key (calendar arithmetic, no timezone involved). */
+export function addDaysToDateKey(dateKey: string, days: number): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(Date.UTC(year!, month! - 1, day!));
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
 /** UTC instant range [start, end) covering "today" in America/Manaus, for range-filtering queries. */
 export function getManausTodayUtcRange(nowIso: string = new Date().toISOString()): { startIso: string; endIso: string } {
   const dateKey = toManausDateKey(nowIso); // e.g. "2026-09-04"

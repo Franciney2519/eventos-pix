@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getManausTodayUtcRange, isSameManausDay, toManausDateKey } from "./timezone";
+import { addDaysToDateKey, getManausTodayUtcRange, isSameManausDay, toManausDateKey } from "./timezone";
 
 describe("toManausDateKey", () => {
   it("keeps a mid-day UTC timestamp on the same calendar day (UTC-4)", () => {
@@ -24,6 +24,16 @@ describe("isSameManausDay", () => {
 
   it("treats two check-ins on the same calendar day as the same day (blocks reuse)", () => {
     expect(isSameManausDay("2026-09-04T13:00:00.000Z", "2026-09-04T23:00:00.000Z")).toBe(true);
+  });
+});
+
+describe("addDaysToDateKey", () => {
+  it("advances to the next day", () => {
+    expect(addDaysToDateKey("2026-09-04", 1)).toBe("2026-09-05");
+  });
+
+  it("rolls over month boundaries", () => {
+    expect(addDaysToDateKey("2026-09-30", 1)).toBe("2026-10-01");
   });
 });
 

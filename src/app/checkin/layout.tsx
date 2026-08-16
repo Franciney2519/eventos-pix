@@ -1,9 +1,10 @@
-import { ScanLine, History } from "lucide-react";
+import { ScanLine, History, Users } from "lucide-react";
 import { SidebarShell, type SidebarItem } from "@/components/layout/sidebar-shell";
 import { requireRole } from "@/lib/auth/session";
 
 const ITEMS: SidebarItem[] = [
   { href: "/checkin", label: "Check-in", icon: ScanLine },
+  { href: "/checkin/participantes", label: "Participantes", icon: Users },
   { href: "/checkin/historico", label: "Histórico", icon: History },
 ];
 
