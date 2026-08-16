@@ -5,13 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { Ticket, LogOut, Menu, X, ChevronsLeft, ChevronsRight } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { signOutAction } from "@/features/auth/actions";
 
 export interface SidebarItem {
   href: string;
   label: string;
-  icon: LucideIcon;
+  icon: React.ReactNode;
 }
 
 const COLLAPSE_STORAGE_KEY = "sidebarCollapsed";
@@ -189,7 +188,7 @@ function SidebarContent({
                 isActive ? "bg-brand-50 text-brand-700" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
               )}
             >
-              <item.icon size={18} className="shrink-0" />
+              <span className="shrink-0">{item.icon}</span>
               {!collapsed && <span className="truncate">{item.label}</span>}
               {collapsed && (
                 <span className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
