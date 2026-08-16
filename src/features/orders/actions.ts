@@ -14,7 +14,7 @@ import {
 import { checkOrderCapacity, computeOrderTotal } from "@/lib/orders/rules";
 import { getApprovedTicketQuantity, getEventById } from "@/features/events/repository";
 import { createOrder, createPaymentProof, generateOrderNumber } from "./repository";
-import { sendTicketsIssuedEmail, sendOrderRejectedEmail } from "@/emails/send";
+import { sendTicketsIssuedEmail, sendOrderRejectedEmail, sendNewOrderNotificationEmail } from "@/emails/send";
 import type { ActionResult } from "@/features/auth/actions";
 
 export interface CreateOrderResult extends ActionResult {
@@ -93,6 +93,13 @@ export async function createOrderWithProofAction(formData: FormData): Promise<Cr
     mime_type: file.type,
     file_size: file.size,
   });
+
+  // Best-effort — the order is already saved either way; failures are logged.
+  try {
+    await sendNewOrderNotificationEmail(order.id);
+  } catch {
+    // sendNewOrderNotificationEmail records the failure in email_logs itself
+  }
 
   revalidatePath("/minhas-inscricoes");
   redirect(`/minhas-inscricoes/${order.id}`);

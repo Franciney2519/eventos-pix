@@ -5,7 +5,7 @@ export type OrderStatus = "WAITING_PAYMENT_REVIEW" | "CONFIRMED" | "TICKETS_ISSU
 export type ProofReviewStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type TicketStatus = "AVAILABLE" | "USED" | "CANCELLED";
 export type CheckinSource = "QR" | "MANUAL";
-export type EmailType = "TICKETS_ISSUED" | "ORDER_REJECTED";
+export type EmailType = "TICKETS_ISSUED" | "ORDER_REJECTED" | "NEW_ORDER_NOTIFICATION";
 export type EmailStatus = "SENT" | "FAILED";
 
 export interface Profile {

@@ -2,7 +2,7 @@ import "server-only";
 import sgMail from "@sendgrid/mail";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ticketPublicUrl } from "@/lib/tickets/token";
-import { buildOrderRejectedEmailHtml, buildTicketsIssuedEmailHtml } from "./templates";
+import { buildNewOrderNotificationEmailHtml, buildOrderRejectedEmailHtml, buildTicketsIssuedEmailHtml } from "./templates";
 
 let configured = false;
 function ensureConfigured() {
@@ -114,10 +114,70 @@ export async function sendOrderRejectedEmail(orderId: string): Promise<void> {
   });
 }
 
+/**
+ * Notifies every ADMIN that a new order is waiting for payment review.
+ * Sent once per admin so each has their own email_logs entry; a failure
+ * for one admin's address doesn't block the others (each is logged and
+ * awaited independently).
+ */
+export async function sendNewOrderNotificationEmail(orderId: string): Promise<void> {
+  const admin = createAdminClient();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+  const { data: order, error: orderError } = await admin
+    .from("orders")
+    .select("*, events(name)")
+    .eq("id", orderId)
+    .single();
+  if (orderError || !order) throw new Error("Order not found for email");
+
+  const { data: buyer } = await admin
+    .from("profiles")
+    .select("full_name, email")
+    .eq("user_id", order.user_id)
+    .single();
+  if (!buyer) throw new Error("Buyer profile not found");
+
+  const { data: admins, error: adminsError } = await admin
+    .from("profiles")
+    .select("user_id, email")
+    .eq("role", "ADMIN");
+  if (adminsError) throw adminsError;
+  if (!admins || admins.length === 0) return;
+
+  const event = (order as unknown as { events: { name: string } }).events;
+
+  const html = buildNewOrderNotificationEmailHtml({
+    eventName: event.name,
+    buyerName: buyer.full_name,
+    buyerEmail: buyer.email,
+    orderNumber: order.order_number,
+    quantity: order.quantity,
+    totalAmount: Number(order.total_amount),
+    reviewUrl: `${appUrl}/admin/solicitacoes/${orderId}`,
+  });
+
+  const results = await Promise.allSettled(
+    admins.map((a) =>
+      sendAndLog({
+        orderId,
+        userId: a.user_id,
+        type: "NEW_ORDER_NOTIFICATION",
+        recipient: a.email,
+        subject: `Nova solicitação de pagamento — ${event.name}`,
+        html,
+      })
+    )
+  );
+
+  const firstFailure = results.find((r) => r.status === "rejected") as PromiseRejectedResult | undefined;
+  if (firstFailure) throw firstFailure.reason;
+}
+
 async function sendAndLog(params: {
   orderId: string;
   userId: string;
-  type: "TICKETS_ISSUED" | "ORDER_REJECTED";
+  type: "TICKETS_ISSUED" | "ORDER_REJECTED" | "NEW_ORDER_NOTIFICATION";
   recipient: string;
   subject: string;
   html: string;

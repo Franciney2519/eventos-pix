@@ -92,6 +92,39 @@ export function buildOrderRejectedEmailHtml(params: OrderRejectedEmailParams): s
   </div>`;
 }
 
+interface NewOrderNotificationEmailParams {
+  eventName: string;
+  buyerName: string;
+  buyerEmail: string;
+  orderNumber: string;
+  quantity: number;
+  totalAmount: number;
+  reviewUrl: string;
+}
+
+export function buildNewOrderNotificationEmailHtml(params: NewOrderNotificationEmailParams): string {
+  return `
+  <div style="${WRAPPER_STYLE}">
+    <div style="${CARD_STYLE}">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="display:inline-flex;width:56px;height:56px;border-radius:9999px;background:#fef3c7;align-items:center;justify-content:center;font-size:28px;">🔔</div>
+      </div>
+      <h1 style="font-size:20px;color:#111827;text-align:center;margin:0 0 8px;">Nova solicitação de pagamento</h1>
+      <p style="font-size:14px;color:#6b7280;text-align:center;margin:0 0 24px;">Um comprovante foi enviado e está aguardando sua análise.</p>
+
+      <div style="background:#f9fafb;border-radius:12px;padding:16px;margin-bottom:24px;">
+        <p style="margin:0 0 4px;font-size:16px;font-weight:600;color:#111827;">${params.eventName}</p>
+        <p style="margin:0;font-size:14px;color:#6b7280;">${escapeHtml(params.buyerName)} · ${escapeHtml(params.buyerEmail)}</p>
+        <p style="margin:12px 0 0;font-size:13px;color:#9ca3af;">Pedido ${params.orderNumber} · ${params.quantity} ingresso(s) · ${formatCurrencyBRL(params.totalAmount)}</p>
+      </div>
+
+      <div style="text-align:center;">
+        <a href="${params.reviewUrl}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 24px;border-radius:12px;">Analisar comprovante</a>
+      </div>
+    </div>
+  </div>`;
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
