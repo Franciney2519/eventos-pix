@@ -328,10 +328,10 @@ $$;
 --   4. marks payment/order as approved
 --   5. issues one ticket per unit with a unique secure token
 create or replace function approve_order(p_order_id uuid, p_admin_id uuid)
-returns table(order_id uuid, tickets_created integer)
+returns table(out_order_id uuid, out_tickets_created integer)
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   v_order orders%rowtype;
@@ -381,11 +381,11 @@ begin
     approved_by = p_admin_id
   where id = v_order.id;
 
-  update payment_proofs set
+  update payment_proofs pp set
     review_status = 'APPROVED',
     reviewed_at = now(),
     reviewed_by = p_admin_id
-  where order_id = v_order.id and review_status = 'PENDING';
+  where pp.order_id = v_order.id and pp.review_status = 'PENDING';
 
   v_i := 1;
   while v_i <= v_order.quantity loop

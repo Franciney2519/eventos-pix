@@ -130,7 +130,7 @@ export interface Database {
       current_user_role: { Args: Record<string, never>; Returns: UserRole };
       approve_order: {
         Args: { p_order_id: string; p_admin_id: string };
-        Returns: { order_id: string; tickets_created: number }[];
+        Returns: { out_order_id: string; out_tickets_created: number }[];
       };
       reject_order: {
         Args: { p_order_id: string; p_admin_id: string; p_reason: string };
