@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { IdCard } from "lucide-react";
+import { IdCard, CheckCircle2 } from "lucide-react";
 import { TicketStatusBadge } from "@/components/ui/status-badge";
 import { CancelTicketButton } from "@/features/tickets/components/cancel-ticket-button";
 import { formatDateTime } from "@/lib/format";
@@ -15,6 +15,7 @@ export interface TicketRowData {
   eventName: string | undefined;
   orderNumber: string | undefined;
   participantName: string | undefined;
+  badgePrintedAt: string | null;
 }
 
 export function TicketsTable({ tickets }: { tickets: TicketRowData[] }) {
@@ -41,6 +42,10 @@ export function TicketsTable({ tickets }: { tickets: TicketRowData[] }) {
     });
   };
 
+  const anySelectedAlreadyPrinted = Array.from(selected).some(
+    (id) => tickets.find((t) => t.id === id)?.badgePrintedAt
+  );
+
   const generateBadges = () => {
     if (selected.size === 0) return;
     router.push(`/imprimir/crachas?ids=${Array.from(selected).join(",")}`);
@@ -51,7 +56,7 @@ export function TicketsTable({ tickets }: { tickets: TicketRowData[] }) {
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-500">{selected.size} selecionado(s)</p>
         <button className="btn-primary" disabled={selected.size === 0} onClick={generateBadges}>
-          <IdCard size={16} /> Gerar crachás
+          <IdCard size={16} /> {anySelectedAlreadyPrinted ? "Gerar / reimprimir crachás" : "Gerar crachás"}
         </button>
       </div>
 
@@ -67,6 +72,7 @@ export function TicketsTable({ tickets }: { tickets: TicketRowData[] }) {
               <th className="px-5 py-3 font-medium">Evento</th>
               <th className="px-5 py-3 font-medium">Pedido</th>
               <th className="px-5 py-3 font-medium">Status</th>
+              <th className="px-5 py-3 font-medium">Crachá</th>
               <th className="px-5 py-3 font-medium">Emitido em</th>
               <th className="px-5 py-3 font-medium"></th>
             </tr>
@@ -89,6 +95,15 @@ export function TicketsTable({ tickets }: { tickets: TicketRowData[] }) {
                 <td className="px-5 py-3 text-gray-700">{t.orderNumber}</td>
                 <td className="px-5 py-3">
                   <TicketStatusBadge status={t.status} />
+                </td>
+                <td className="px-5 py-3">
+                  {t.badgePrintedAt ? (
+                    <span className="badge-success" title={`Impresso em ${formatDateTime(t.badgePrintedAt)}`}>
+                      <CheckCircle2 size={12} /> Impresso
+                    </span>
+                  ) : (
+                    <span className="badge-gray">Pendente</span>
+                  )}
                 </td>
                 <td className="px-5 py-3 text-gray-500">{formatDateTime(t.issued_at)}</td>
                 <td className="px-5 py-3 text-right">

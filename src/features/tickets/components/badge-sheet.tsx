@@ -1,9 +1,11 @@
 "use client";
 
+import { useTransition } from "react";
 import QRCode from "react-qr-code";
-import { Printer } from "lucide-react";
+import { Printer, Loader2 } from "lucide-react";
 import { ticketPublicUrl } from "@/lib/tickets/token";
 import type { TicketForBadge } from "@/features/tickets/repository";
+import { markBadgesPrintedAction } from "@/features/tickets/actions";
 
 // Coordinates measured against the 1024x1536px (10cm x 15cm @ 102.4px/cm)
 // template in public/badges/identidade-template.png. Tweak these if the
@@ -16,6 +18,16 @@ const QR_LEFT_CM = 3.8;
 const QR_SIZE_CM = 2.4;
 
 export function BadgeSheet({ tickets, appUrl }: { tickets: TicketForBadge[]; appUrl: string }) {
+  const [pending, startTransition] = useTransition();
+  const alreadyPrintedCount = tickets.filter((t) => t.badge_printed_at).length;
+
+  const handlePrint = () => {
+    startTransition(async () => {
+      await markBadgesPrintedAction(tickets.map((t) => t.id));
+      window.print();
+    });
+  };
+
   return (
     <div>
       <style>{`
@@ -31,11 +43,19 @@ export function BadgeSheet({ tickets, appUrl }: { tickets: TicketForBadge[]; app
         }
       `}</style>
 
-      <div className="no-print mb-6 flex items-center justify-between">
-        <p className="text-sm text-gray-500">{tickets.length} crachá(s) prontos para impressão (100mm x 150mm)</p>
-        <button className="btn-primary" onClick={() => window.print()}>
-          <Printer size={16} /> Imprimir
-        </button>
+      <div className="no-print mb-6 space-y-1">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-gray-500">{tickets.length} crachá(s) prontos para impressão (100mm x 150mm)</p>
+          <button className="btn-primary" disabled={pending} onClick={handlePrint}>
+            {pending ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
+            {alreadyPrintedCount > 0 ? "Reimprimir" : "Imprimir"}
+          </button>
+        </div>
+        {alreadyPrintedCount > 0 && (
+          <p className="text-xs text-warning-600">
+            {alreadyPrintedCount} desse(s) crachá(s) já {alreadyPrintedCount === 1 ? "foi impresso" : "foram impressos"} antes — isso será uma reimpressão.
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col items-center gap-6 print:gap-0">

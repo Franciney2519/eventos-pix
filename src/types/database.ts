@@ -83,6 +83,7 @@ export interface TicketRow {
   used_at: string | null;
   cancelled_at: string | null;
   created_at: string;
+  badge_printed_at: string | null;
 }
 
 export interface CheckinRow {

@@ -36,3 +36,24 @@ export async function resendTicketEmailAction(orderId: string): Promise<ActionRe
     return { ok: false, error: "Não foi possível reenviar o e-mail" };
   }
 }
+
+/**
+ * Marks badges as printed (or reprinted — always overwrites with "now",
+ * reprinting is never blocked). Called right before the browser print
+ * dialog opens, from /imprimir/crachas.
+ */
+export async function markBadgesPrintedAction(ticketIds: string[]): Promise<ActionResult> {
+  await requireRole("ADMIN");
+  if (ticketIds.length === 0) return { ok: true };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("tickets")
+    .update({ badge_printed_at: new Date().toISOString() })
+    .in("id", ticketIds);
+
+  if (error) return { ok: false, error: "Não foi possível registrar a impressão" };
+
+  revalidatePath("/admin/ingressos");
+  return { ok: true };
+}

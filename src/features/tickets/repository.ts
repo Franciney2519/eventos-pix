@@ -65,6 +65,7 @@ export interface TicketForBadge {
   event_date: string;
   event_time: string;
   event_location: string;
+  badge_printed_at: string | null;
 }
 
 export async function getTicketsForBadges(supabase: DB, ticketIds: string[]): Promise<TicketForBadge[]> {
@@ -73,7 +74,7 @@ export async function getTicketsForBadges(supabase: DB, ticketIds: string[]): Pr
   const { data, error } = await supabase
     .from("tickets")
     .select(
-      "id, ticket_number, token, status, events(name, event_date, event_time, location), orders(profiles!orders_user_id_profiles_fkey(full_name))"
+      "id, ticket_number, token, status, badge_printed_at, events(name, event_date, event_time, location), orders(profiles!orders_user_id_profiles_fkey(full_name))"
     )
     .in("id", ticketIds);
 
@@ -92,6 +93,7 @@ export async function getTicketsForBadges(supabase: DB, ticketIds: string[]): Pr
       event_date: event.event_date,
       event_time: event.event_time,
       event_location: event.location,
+      badge_printed_at: t.badge_printed_at,
     };
   });
 }

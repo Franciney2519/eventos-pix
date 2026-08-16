@@ -21,6 +21,7 @@ export default async function AdminTicketsPage({ searchParams }: { searchParams:
     orderNumber: (t.orders as unknown as { order_number: string } | null)?.order_number,
     participantName: (t.orders as unknown as { profiles: { full_name: string } | null } | null)?.profiles
       ?.full_name,
+    badgePrintedAt: t.badge_printed_at,
   }));
 
   return (
