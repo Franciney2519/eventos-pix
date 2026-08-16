@@ -2,14 +2,23 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CameraIcon, CheckCircle2, Loader2, Search, XCircle, AlertTriangle } from "lucide-react";
+import { CameraIcon, CheckCircle2, Loader2, Mail, Phone, Search, User, XCircle, AlertTriangle } from "lucide-react";
 import { QrScanner } from "./qr-scanner";
 import { extractTokenFromScan } from "@/lib/checkin/extract-token";
 import { useToast } from "@/components/ui/toast";
 
 interface ScanResult {
   outcome: "OK" | "TICKET_NOT_FOUND" | "ALREADY_CHECKED_IN_TODAY" | "TICKET_CANCELLED";
-  ticket?: { id: string; ticketNumber: string; status: string; lastCheckedInAt: string | null; orderNumber: string | null };
+  ticket?: {
+    id: string;
+    ticketNumber: string;
+    status: string;
+    lastCheckedInAt: string | null;
+    orderNumber: string | null;
+    participantName: string | null;
+    participantEmail: string | null;
+    participantPhone: string | null;
+  };
 }
 
 interface SearchResult {
@@ -184,7 +193,7 @@ function ScanResultView({
       <div className="flex flex-col items-center gap-2 py-4 text-center">
         <XCircle size={36} className="text-danger-500" />
         <p className="font-semibold text-danger-600">Ingresso cancelado</p>
-        <p className="font-mono text-sm text-gray-500">{result.ticket?.ticketNumber}</p>
+        <ParticipantInfo ticket={result.ticket} />
       </div>
     );
   }
@@ -194,7 +203,7 @@ function ScanResultView({
       <div className="flex flex-col items-center gap-2 py-4 text-center">
         <AlertTriangle size={36} className="text-danger-500" />
         <p className="font-semibold text-danger-600">Check-in já feito hoje</p>
-        <p className="font-mono text-sm text-gray-500">{result.ticket?.ticketNumber}</p>
+        <ParticipantInfo ticket={result.ticket} />
         {result.ticket?.lastCheckedInAt && (
           <p className="text-xs text-gray-400">Entrada às {new Date(result.ticket.lastCheckedInAt).toLocaleTimeString("pt-BR")}</p>
         )}
@@ -207,12 +216,39 @@ function ScanResultView({
     <div className="flex flex-col items-center gap-3 py-4 text-center">
       <CheckCircle2 size={36} className="text-success-600" />
       <p className="font-semibold text-success-700">Ingresso válido</p>
-      <p className="font-mono text-sm text-gray-700">{result.ticket?.ticketNumber}</p>
-      <p className="text-xs text-gray-400">Pedido {result.ticket?.orderNumber}</p>
+      <ParticipantInfo ticket={result.ticket} />
       <button className="btn-primary" disabled={pending} onClick={() => result.ticket && onConfirm(result.ticket.id)}>
         {pending && <Loader2 size={16} className="animate-spin" />}
         Confirmar entrada
       </button>
+    </div>
+  );
+}
+
+function ParticipantInfo({ ticket }: { ticket: ScanResult["ticket"] }) {
+  if (!ticket) return null;
+
+  return (
+    <div className="w-full max-w-xs rounded-xl bg-gray-50 p-4 text-left">
+      {ticket.participantName && (
+        <p className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+          <User size={14} className="shrink-0 text-gray-400" /> {ticket.participantName}
+        </p>
+      )}
+      {ticket.participantEmail && (
+        <p className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+          <Mail size={12} className="shrink-0 text-gray-400" /> {ticket.participantEmail}
+        </p>
+      )}
+      {ticket.participantPhone && (
+        <p className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+          <Phone size={12} className="shrink-0 text-gray-400" /> {ticket.participantPhone}
+        </p>
+      )}
+      <div className="mt-2 flex items-center justify-between border-t border-gray-200 pt-2 text-xs text-gray-400">
+        <span className="font-mono">{ticket.ticketNumber}</span>
+        <span>Pedido {ticket.orderNumber}</span>
+      </div>
     </div>
   );
 }

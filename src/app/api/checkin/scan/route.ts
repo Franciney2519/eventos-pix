@@ -31,6 +31,12 @@ export async function POST(request: Request) {
   const alreadyCheckedInToday = lastCheckin ? isSameManausDay(lastCheckin.checked_in_at, new Date().toISOString()) : false;
   const outcome = evaluateTicketForCheckin(ticket.status, alreadyCheckedInToday);
 
+  const order = (
+    ticket as unknown as {
+      orders: { order_number: string; profiles: { full_name: string; email: string; phone: string | null } | null } | null;
+    }
+  ).orders;
+
   return NextResponse.json({
     ok: true,
     outcome,
@@ -39,7 +45,10 @@ export async function POST(request: Request) {
       ticketNumber: ticket.ticket_number,
       status: ticket.status,
       lastCheckedInAt: lastCheckin?.checked_in_at ?? null,
-      orderNumber: (ticket as unknown as { orders: { order_number: string } | null }).orders?.order_number ?? null,
+      orderNumber: order?.order_number ?? null,
+      participantName: order?.profiles?.full_name ?? null,
+      participantEmail: order?.profiles?.email ?? null,
+      participantPhone: order?.profiles?.phone ?? null,
     },
   });
 }

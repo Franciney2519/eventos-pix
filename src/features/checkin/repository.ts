@@ -41,7 +41,9 @@ export async function getEventCheckinStats(supabase: DB, eventId: string) {
 export async function findTicketByToken(supabase: DB, eventId: string, token: string) {
   const { data, error } = await supabase
     .from("tickets")
-    .select("*, orders(order_number, user_id)")
+    .select(
+      "*, orders(order_number, user_id, profiles!orders_user_id_profiles_fkey(full_name, email, phone))"
+    )
     .eq("event_id", eventId)
     .eq("token", token)
     .maybeSingle();
