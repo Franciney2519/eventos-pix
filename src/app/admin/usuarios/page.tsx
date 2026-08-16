@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { RoleSelect } from "@/features/users/components/role-select";
+import { ResetPasswordButton } from "@/features/users/components/reset-password-button";
 import { formatDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,7 @@ export default async function AdminUsersPage() {
               <th className="px-5 py-3 font-medium">E-mail</th>
               <th className="px-5 py-3 font-medium">Cadastro</th>
               <th className="px-5 py-3 font-medium">Papel</th>
+              <th className="px-5 py-3 font-medium"></th>
             </tr>
           </thead>
           <tbody>
@@ -36,6 +38,9 @@ export default async function AdminUsersPage() {
                 <td className="px-5 py-3 text-gray-500">{formatDateTime(p.created_at)}</td>
                 <td className="px-5 py-3">
                   <RoleSelect profileId={p.id} role={p.role} />
+                </td>
+                <td className="px-5 py-3 text-right">
+                  <ResetPasswordButton email={p.email} />
                 </td>
               </tr>
             ))}
