@@ -15,10 +15,12 @@ export function OrderFlow({
   event,
   availableSeats,
   isLoggedIn,
+  isStaff,
 }: {
   event: EventRow;
   availableSeats: number;
   isLoggedIn: boolean;
+  isStaff?: boolean;
 }) {
   const { show } = useToast();
   const [step, setStep] = useState<1 | 2>(1);
@@ -103,6 +105,14 @@ export function OrderFlow({
     );
   }
 
+  if (isStaff) {
+    return (
+      <div className="card text-center">
+        <p className="text-sm text-gray-600">Contas de administração não podem comprar ingressos.</p>
+      </div>
+    );
+  }
+
   if (!canOrder) {
     return (
       <div className="card text-center">
@@ -124,7 +134,7 @@ export function OrderFlow({
 
         <div className="space-y-2 border-t border-gray-100 pt-4">
           <p className="label mb-0">
-            Nome no crachá {quantity > 1 ? "de cada participante" : ""}
+            Nome do participante {quantity > 1 ? "de cada ingresso" : ""}
           </p>
           {attendeeNames.map((name, i) => (
             <input

@@ -24,6 +24,10 @@ export interface CreateOrderResult extends ActionResult {
 export async function createOrderWithProofAction(formData: FormData): Promise<CreateOrderResult> {
   const user = await requireUser();
 
+  if (user.profile.role !== "CUSTOMER") {
+    return { ok: false, error: "Contas de administração não podem comprar ingressos." };
+  }
+
   let attendeeNames: unknown = [];
   try {
     attendeeNames = JSON.parse(String(formData.get("attendeeNames") ?? "[]"));

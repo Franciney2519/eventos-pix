@@ -62,7 +62,12 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         </div>
 
         <div>
-          <OrderFlow event={event} availableSeats={availableSeats} isLoggedIn={!!user} />
+          <OrderFlow
+            event={event}
+            availableSeats={availableSeats}
+            isLoggedIn={!!user}
+            isStaff={!!user && user.profile.role !== "CUSTOMER"}
+          />
         </div>
       </main>
     </>
