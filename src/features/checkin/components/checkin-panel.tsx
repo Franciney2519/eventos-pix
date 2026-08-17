@@ -96,7 +96,7 @@ export function CheckinPanel({ eventId, checkedIn, approvedTickets }: { eventId:
 
   return (
     <div className="space-y-6">
-      <div className="card flex items-center justify-between">
+      <div className="card flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-2xl font-semibold text-gray-900">
             {checkedIn} / {approvedTickets}
@@ -104,7 +104,7 @@ export function CheckinPanel({ eventId, checkedIn, approvedTickets }: { eventId:
           <p className="text-sm text-gray-500">presentes hoje</p>
         </div>
         {!scanning && (
-          <button className="btn-primary" onClick={() => { setScanning(true); setResult(null); }}>
+          <button className="btn-primary w-full sm:w-auto" onClick={() => { setScanning(true); setResult(null); }}>
             <CameraIcon size={16} /> Abrir scanner
           </button>
         )}
@@ -145,7 +145,7 @@ export function CheckinPanel({ eventId, checkedIn, approvedTickets }: { eventId:
         {searchResults.length > 0 && (
           <ul className="space-y-2">
             {searchResults.map((t) => (
-              <li key={t.id} className="flex items-center justify-between rounded-xl border border-gray-100 p-3">
+              <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-gray-100 p-3">
                 <div>
                   <p className="text-sm font-medium text-gray-900">{t.participantName}</p>
                   <p className="text-xs text-gray-500">

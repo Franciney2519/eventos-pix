@@ -22,14 +22,13 @@ export default async function AdminTicketsPage({ searchParams }: { searchParams:
     participantName:
       t.attendee_name ??
       (t.orders as unknown as { profiles: { full_name: string } | null } | null)?.profiles?.full_name,
-    badgePrintedAt: t.badge_printed_at,
   }));
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Ingressos</h1>
-        <p className="text-sm text-gray-500">Todos os ingressos emitidos na plataforma. Selecione para gerar crachás.</p>
+        <p className="text-sm text-gray-500">Todos os ingressos emitidos na plataforma.</p>
       </div>
 
       <form className="flex flex-wrap gap-2">

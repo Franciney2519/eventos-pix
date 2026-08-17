@@ -14,12 +14,12 @@ export default async function AdminEventsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Eventos</h1>
           <p className="text-sm text-gray-500">Crie e gerencie os eventos da plataforma.</p>
         </div>
-        <Link href="/admin/eventos/novo" className="btn-primary">
+        <Link href="/admin/eventos/novo" className="btn-primary w-full sm:w-auto">
           <Plus size={16} /> Novo evento
         </Link>
       </div>

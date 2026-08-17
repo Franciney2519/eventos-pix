@@ -60,6 +60,9 @@ export default async function TicketPage({ params }: { params: { token: string }
             </div>
           )}
 
+          {ticket.attendee_name && (
+            <p className="text-sm font-semibold text-gray-900">{ticket.attendee_name}</p>
+          )}
           <p className="font-mono text-sm font-medium text-gray-900">{ticket.ticket_number}</p>
           <TicketStatusBadge status={ticket.status} />
         </div>

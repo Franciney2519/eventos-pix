@@ -9,6 +9,10 @@ export interface ActionResult {
   error?: string;
 }
 
+export interface SignInResult extends ActionResult {
+  role?: "CUSTOMER" | "ADMIN" | "CHECKIN";
+}
+
 export async function signUpAction(formData: FormData): Promise<ActionResult> {
   const parsed = signUpSchema.safeParse({
     fullName: formData.get("fullName"),
@@ -42,7 +46,7 @@ export async function signUpAction(formData: FormData): Promise<ActionResult> {
   return { ok: true };
 }
 
-export async function signInAction(formData: FormData): Promise<ActionResult> {
+export async function signInAction(formData: FormData): Promise<SignInResult> {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -53,13 +57,19 @@ export async function signInAction(formData: FormData): Promise<ActionResult> {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
     return { ok: false, error: translateAuthError(error.message) };
   }
 
-  return { ok: true };
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("user_id", data.user.id)
+    .single();
+
+  return { ok: true, role: profile?.role };
 }
 
 export async function signOutAction() {

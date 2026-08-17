@@ -11,6 +11,12 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { useToast } from "@/components/ui/toast";
 import { Loader2 } from "lucide-react";
 
+function defaultRouteForRole(role: string | undefined) {
+  if (role === "ADMIN") return "/admin";
+  if (role === "CHECKIN") return "/checkin";
+  return "/minha-conta";
+}
+
 export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
@@ -37,7 +43,7 @@ export function LoginForm() {
         return;
       }
       show("Login realizado com sucesso!", "success");
-      router.push(params.get("redirect") || "/minha-conta");
+      router.push(params.get("redirect") || defaultRouteForRole(result.role));
       router.refresh();
     });
   };

@@ -78,12 +78,12 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
         ) : (
           proofsWithUrl.map((p) => (
             <div key={p.id} className="space-y-3 rounded-xl border border-gray-100 p-4">
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-sm text-gray-700">
-                  <FileText size={16} /> {p.file_name}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="flex items-center gap-2 break-all text-sm text-gray-700">
+                  <FileText size={16} className="shrink-0" /> {p.file_name}
                 </span>
                 {p.signedUrl && (
-                  <a href={p.signedUrl} target="_blank" rel="noreferrer" className="text-sm text-brand-600 hover:underline">
+                  <a href={p.signedUrl} target="_blank" rel="noreferrer" className="shrink-0 text-sm text-brand-600 hover:underline">
                     Visualizar
                   </a>
                 )}
@@ -102,7 +102,7 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
 
       {tickets.length > 0 && (
         <div className="card">
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold text-gray-900">Ingressos emitidos</h2>
             <ResendEmailButton orderId={order.id} />
           </div>

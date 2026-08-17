@@ -6,6 +6,7 @@ import { listTicketsForUser } from "@/features/tickets/repository";
 import { TicketStatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatEventDate, formatEventTime } from "@/lib/format";
+import { TicketPresentation } from "@/features/tickets/components/ticket-presentation";
 
 export const dynamic = "force-dynamic";
 
@@ -29,19 +30,38 @@ export default async function MyTicketsPage() {
     );
   }
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const presentable = tickets
+    .filter((t) => t.events)
+    .map((t) => ({
+      id: t.id,
+      token: t.token,
+      ticket_number: t.ticket_number,
+      status: t.status,
+      attendee_name: t.attendee_name,
+      event_name: t.events!.name,
+      event_date: t.events!.event_date,
+      event_time: t.events!.event_time,
+    }));
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Meus ingressos</h1>
-        <p className="text-sm text-gray-500">Acesse individualmente o QR Code de cada ingresso.</p>
+        <p className="text-sm text-gray-500">Acompanhe seus ingressos e mostre o QR code na entrada do evento.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <TicketPresentation tickets={presentable} appUrl={appUrl} />
+
+      <div>
+        <h2 className="mb-3 font-semibold text-gray-900">Detalhes</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {tickets.map((t) => (
           <div key={t.id} className="card">
             <div className="flex items-start justify-between">
               <div>
                 <p className="font-semibold text-gray-900">{t.events?.name}</p>
+                {t.attendee_name && <p className="text-sm text-gray-600">{t.attendee_name}</p>}
                 <p className="font-mono text-xs text-gray-400">{t.ticket_number}</p>
               </div>
               <TicketStatusBadge status={t.status} />
@@ -66,6 +86,7 @@ export default async function MyTicketsPage() {
             </Link>
           </div>
         ))}
+        </div>
       </div>
     </div>
   );
