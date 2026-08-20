@@ -30,65 +30,69 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
       <PublicHeader />
 
       {event.image_url && (
-        <div className="relative h-56 w-full overflow-hidden sm:h-72">
-          <Image src={event.image_url} alt={event.name} fill priority className="object-cover" />
+        <div className="flex w-full justify-center" style={{ backgroundColor: ACCENT_COLOR }}>
+          <div className="relative aspect-[4/5] w-full max-w-md sm:aspect-[3/4]">
+            <Image src={event.image_url} alt={event.name} fill priority className="object-contain" />
+          </div>
         </div>
       )}
 
-      <main className="mx-auto grid max-w-5xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_360px]">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">{event.name}</h1>
+      <div className="min-h-[60vh] w-full" style={{ backgroundColor: `${ACCENT_COLOR}14` }}>
+        <main className="mx-auto grid max-w-5xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_360px]">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">{event.name}</h1>
 
-          <div className="mt-3 flex flex-wrap gap-4 text-sm text-gray-600">
-            <span className="flex items-center gap-1.5">
-              <CalendarDays size={16} /> {formatEventDate(event.event_date)}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Clock size={16} /> {formatEventTime(event.event_time)}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <MapPin size={16} /> {event.location}
-            </span>
+            <div className="mt-3 flex flex-wrap gap-4 text-sm text-gray-600">
+              <span className="flex items-center gap-1.5">
+                <CalendarDays size={16} /> {formatEventDate(event.event_date)}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Clock size={16} /> {formatEventTime(event.event_time)}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <MapPin size={16} /> {event.location}
+              </span>
+            </div>
+
+            {event.address && <p className="mt-1 text-sm text-gray-500">{event.address}</p>}
+
+            <div className="mt-6">
+              <CountdownTimer targetIso={eventStartIso} accentColor={ACCENT_COLOR} />
+            </div>
+
+            {event.description && (
+              <div className="card mt-6 whitespace-pre-line text-sm text-gray-700">{event.description}</div>
+            )}
+
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+              <div className="card !p-4" style={{ borderColor: ACCENT_COLOR }}>
+                <p className="text-xs text-gray-400">Valor unitário</p>
+                <p className="font-semibold" style={{ color: ACCENT_COLOR }}>
+                  {formatCurrencyBRL(event.ticket_price)}
+                </p>
+              </div>
+              <div className="card !p-4">
+                <p className="text-xs text-gray-400">Disponíveis</p>
+                <p className="font-semibold text-gray-900">{availableSeats}</p>
+              </div>
+              <div className="card !p-4">
+                <p className="text-xs text-gray-400">Capacidade</p>
+                <p className="font-semibold text-gray-900">{event.capacity}</p>
+              </div>
+            </div>
           </div>
 
-          {event.address && <p className="mt-1 text-sm text-gray-500">{event.address}</p>}
-
-          <div className="mt-6">
-            <CountdownTimer targetIso={eventStartIso} accentColor={ACCENT_COLOR} />
+          <div>
+            <OrderFlow
+              event={event}
+              availableSeats={availableSeats}
+              isLoggedIn={!!user}
+              isStaff={!!user && user.profile.role !== "CUSTOMER"}
+              accentColor={ACCENT_COLOR}
+            />
           </div>
-
-          {event.description && (
-            <div className="card mt-6 whitespace-pre-line text-sm text-gray-700">{event.description}</div>
-          )}
-
-          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <div className="card !p-4" style={{ borderColor: ACCENT_COLOR }}>
-              <p className="text-xs text-gray-400">Valor unitário</p>
-              <p className="font-semibold" style={{ color: ACCENT_COLOR }}>
-                {formatCurrencyBRL(event.ticket_price)}
-              </p>
-            </div>
-            <div className="card !p-4">
-              <p className="text-xs text-gray-400">Disponíveis</p>
-              <p className="font-semibold text-gray-900">{availableSeats}</p>
-            </div>
-            <div className="card !p-4">
-              <p className="text-xs text-gray-400">Capacidade</p>
-              <p className="font-semibold text-gray-900">{event.capacity}</p>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <OrderFlow
-            event={event}
-            availableSeats={availableSeats}
-            isLoggedIn={!!user}
-            isStaff={!!user && user.profile.role !== "CUSTOMER"}
-            accentColor={ACCENT_COLOR}
-          />
-        </div>
-      </main>
+        </main>
+      </div>
     </>
   );
 }
