@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { FileText, QrCode } from "lucide-react";
+import { FileText, QrCode, MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getOrderById, getProofsForOrder } from "@/features/orders/repository";
 import { listTicketsForOrder } from "@/features/tickets/repository";
@@ -10,6 +10,8 @@ import { formatCurrencyBRL, formatDateTime, formatEventDate, formatEventTime } f
 import { OrderReviewActions } from "@/features/orders/components/order-review-actions";
 import { ProofObservationForm } from "@/features/orders/components/proof-observation-form";
 import { ResendEmailButton } from "@/features/tickets/components/resend-email-button";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
+import { ticketPublicUrl } from "@/lib/tickets/token";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +35,21 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
     proofs.map(async (p) => ({ ...p, signedUrl: await getSignedProofUrl(p.file_path) }))
   );
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const buyerFirstName = buyer?.full_name?.split(" ")[0] ?? "";
+  const genericWhatsAppLink = buyer?.phone
+    ? buildWhatsAppLink(buyer.phone, `Olá, ${buyerFirstName}! Sobre sua solicitação #${order.order_number} para ${order.events?.name}...`)
+    : null;
+  const ticketsWhatsAppLink =
+    buyer?.phone && tickets.length > 0
+      ? buildWhatsAppLink(
+          buyer.phone,
+          `Olá, ${buyerFirstName}! Seu pagamento foi confirmado. Aqui está(ão) seu(s) ingresso(s):\n${tickets
+            .map((t) => ticketPublicUrl(appUrl, t.token))
+            .join("\n")}`
+        )
+      : null;
+
   return (
     <div className="max-w-3xl space-y-6">
       <div>
@@ -46,6 +63,16 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
           <p className="text-sm text-gray-700">{buyer?.full_name}</p>
           <p className="text-sm text-gray-500">{buyer?.email}</p>
           <p className="text-sm text-gray-500">{buyer?.phone}</p>
+          {genericWhatsAppLink && (
+            <a
+              href={genericWhatsAppLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary mt-1 !px-3 !py-1.5 text-xs"
+            >
+              <MessageCircle size={14} /> Chamar no WhatsApp
+            </a>
+          )}
         </div>
         <div className="card space-y-2">
           <h2 className="font-semibold text-gray-900">Evento</h2>
@@ -104,7 +131,14 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
         <div className="card">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold text-gray-900">Ingressos emitidos</h2>
-            <ResendEmailButton orderId={order.id} />
+            <div className="flex gap-2">
+              <ResendEmailButton orderId={order.id} />
+              {ticketsWhatsAppLink && (
+                <a href={ticketsWhatsAppLink} target="_blank" rel="noopener noreferrer" className="btn-secondary !px-3 !py-1.5 text-xs">
+                  <MessageCircle size={14} /> Enviar por WhatsApp
+                </a>
+              )}
+            </div>
           </div>
           <ul className="grid gap-3 sm:grid-cols-2">
             {tickets.map((t) => (
