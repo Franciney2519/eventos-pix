@@ -201,7 +201,7 @@ export async function listWalkInSales(supabase: DB, eventId: string): Promise<Wa
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id, order_number, payment_method, created_at, profiles!orders_user_id_profiles_fkey(full_name, email, phone), tickets(id, ticket_number, token, status), sold_by_profile:profiles!orders_sold_by_fkey(full_name)"
+      "id, order_number, payment_method, created_at, profiles!orders_user_id_profiles_fkey(full_name, email, phone), tickets(id, ticket_number, token, status), sold_by_profile:profiles!orders_sold_by_profiles_fkey(full_name)"
     )
     .eq("event_id", eventId)
     .eq("sale_channel", "WALK_IN")
