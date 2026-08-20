@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
 import { PublicHeader } from "@/components/layout/public-header";
@@ -6,8 +7,11 @@ import { getEventBySlug, getApprovedTicketQuantity } from "@/features/events/rep
 import { getSessionUser } from "@/lib/auth/session";
 import { formatCurrencyBRL, formatEventDate, formatEventTime } from "@/lib/format";
 import { OrderFlow } from "@/features/orders/components/order-flow";
+import { CountdownTimer } from "@/features/events/components/countdown-timer";
 
 export const dynamic = "force-dynamic";
+
+const ACCENT_COLOR = "#FD3A2D";
 
 export default async function EventDetailPage({ params }: { params: { slug: string } }) {
   const supabase = await createClient();
@@ -19,10 +23,18 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
     getSessionUser(),
   ]);
   const availableSeats = Math.max(0, event.capacity - approved);
+  const eventStartIso = `${event.event_date}T${event.event_time}-04:00`;
 
   return (
     <>
       <PublicHeader />
+
+      {event.image_url && (
+        <div className="relative h-56 w-full overflow-hidden sm:h-72">
+          <Image src={event.image_url} alt={event.name} fill priority className="object-cover" />
+        </div>
+      )}
+
       <main className="mx-auto grid max-w-5xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_360px]">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">{event.name}</h1>
@@ -41,14 +53,20 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
           {event.address && <p className="mt-1 text-sm text-gray-500">{event.address}</p>}
 
+          <div className="mt-6">
+            <CountdownTimer targetIso={eventStartIso} accentColor={ACCENT_COLOR} />
+          </div>
+
           {event.description && (
             <div className="card mt-6 whitespace-pre-line text-sm text-gray-700">{event.description}</div>
           )}
 
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <div className="card !p-4">
+            <div className="card !p-4" style={{ borderColor: ACCENT_COLOR }}>
               <p className="text-xs text-gray-400">Valor unitário</p>
-              <p className="font-semibold text-gray-900">{formatCurrencyBRL(event.ticket_price)}</p>
+              <p className="font-semibold" style={{ color: ACCENT_COLOR }}>
+                {formatCurrencyBRL(event.ticket_price)}
+              </p>
             </div>
             <div className="card !p-4">
               <p className="text-xs text-gray-400">Disponíveis</p>
@@ -67,6 +85,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
             availableSeats={availableSeats}
             isLoggedIn={!!user}
             isStaff={!!user && user.profile.role !== "CUSTOMER"}
+            accentColor={ACCENT_COLOR}
           />
         </div>
       </main>

@@ -16,11 +16,13 @@ export function OrderFlow({
   availableSeats,
   isLoggedIn,
   isStaff,
+  accentColor,
 }: {
   event: EventRow;
   availableSeats: number;
   isLoggedIn: boolean;
   isStaff?: boolean;
+  accentColor?: string;
 }) {
   const { show } = useToast();
   const [step, setStep] = useState<1 | 2>(1);
@@ -160,7 +162,11 @@ export function OrderFlow({
           </div>
         </div>
 
-        <button className="btn-primary w-full" onClick={goToPayment}>
+        <button
+          className="btn-primary w-full"
+          style={accentColor ? { backgroundColor: accentColor } : undefined}
+          onClick={goToPayment}
+        >
           Continuar
         </button>
       </div>
@@ -202,7 +208,12 @@ export function OrderFlow({
         <button className="btn-secondary flex-1" onClick={() => setStep(1)} disabled={pending}>
           Voltar
         </button>
-        <button className="btn-primary flex-1" onClick={submit} disabled={pending}>
+        <button
+          className="btn-primary flex-1"
+          style={accentColor ? { backgroundColor: accentColor } : undefined}
+          onClick={submit}
+          disabled={pending}
+        >
           {pending && <Loader2 size={16} className="animate-spin" />}
           Enviar solicitação
         </button>
