@@ -61,6 +61,7 @@ export default async function CheckinPage({ searchParams }: { searchParams: { ev
         eventId={selectedEventId}
         checkedIn={stats.checkedIn}
         approvedTickets={stats.approvedTickets}
+        capacity={selectedEvent.capacity}
         recentCheckins={recent}
       />
     </div>

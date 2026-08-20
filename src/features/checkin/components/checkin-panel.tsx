@@ -42,11 +42,13 @@ export function CheckinPanel({
   eventId,
   checkedIn,
   approvedTickets,
+  capacity,
   recentCheckins,
 }: {
   eventId: string;
   checkedIn: number;
   approvedTickets: number;
+  capacity: number;
   recentCheckins: RecentCheckin[];
 }) {
   const router = useRouter();
@@ -113,24 +115,36 @@ export function CheckinPanel({
   };
 
   const percent = approvedTickets > 0 ? Math.min(100, Math.round((checkedIn / approvedTickets) * 100)) : 0;
+  const availableSeats = Math.max(0, capacity - approvedTickets);
+  const soldOut = availableSeats <= 0;
 
   return (
     <div className="space-y-6">
       <div className="card">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <div className="border-2 border-gray-200 bg-gray-50 p-3">
             <p className="text-[10px] uppercase tracking-wide text-gray-500">Confirmados hoje</p>
             <p className="text-lg font-bold text-brand-600">{checkedIn}</p>
           </div>
           <div className="border-2 border-gray-200 bg-gray-50 p-3">
-            <p className="text-[10px] uppercase tracking-wide text-gray-500">Total de ingressos</p>
+            <p className="text-[10px] uppercase tracking-wide text-gray-500">Vendidos</p>
             <p className="text-lg font-bold text-gray-900">{approvedTickets}</p>
+          </div>
+          <div className={`border-2 p-3 ${soldOut ? "border-danger-200 bg-danger-50" : "border-success-200 bg-success-50"}`}>
+            <p className="text-[10px] uppercase tracking-wide text-gray-500">Vagas livres</p>
+            <p className={`text-lg font-bold ${soldOut ? "text-danger-600" : "text-success-600"}`}>{availableSeats}</p>
           </div>
         </div>
         <div className="mt-3 h-1.5 w-full overflow-hidden bg-gray-200">
           <div className="h-full bg-brand-600 transition-all" style={{ width: `${percent}%` }} />
         </div>
         <p className="mt-1.5 text-[10px] text-gray-500">{percent}% check-in realizado hoje</p>
+
+        <p className={`mt-3 text-xs font-semibold ${soldOut ? "text-danger-600" : "text-success-600"}`}>
+          {soldOut
+            ? "Ingressos esgotados — não é possível vender no local."
+            : `${availableSeats} ingresso(s) ainda pode(m) ser vendido(s) no local, se alguém aparecer sem inscrição.`}
+        </p>
 
         {!scanning && (
           <button className="btn-primary mt-4 w-full" onClick={() => { setScanning(true); setResult(null); }}>
