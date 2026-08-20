@@ -30,7 +30,25 @@ interface SearchResult {
   alreadyCheckedInToday: boolean;
 }
 
-export function CheckinPanel({ eventId, checkedIn, approvedTickets }: { eventId: string; checkedIn: number; approvedTickets: number }) {
+interface RecentCheckin {
+  id: string;
+  ticketNumber: string;
+  participantName: string;
+  checkedInAt: string;
+  source: string;
+}
+
+export function CheckinPanel({
+  eventId,
+  checkedIn,
+  approvedTickets,
+  recentCheckins,
+}: {
+  eventId: string;
+  checkedIn: number;
+  approvedTickets: number;
+  recentCheckins: RecentCheckin[];
+}) {
   const router = useRouter();
   const { show } = useToast();
   const [scanning, setScanning] = useState(false);
@@ -94,17 +112,28 @@ export function CheckinPanel({ eventId, checkedIn, approvedTickets }: { eventId:
     }
   };
 
+  const percent = approvedTickets > 0 ? Math.min(100, Math.round((checkedIn / approvedTickets) * 100)) : 0;
+
   return (
     <div className="space-y-6">
-      <div className="card flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-2xl font-semibold text-gray-900">
-            {checkedIn} / {approvedTickets}
-          </p>
-          <p className="text-sm text-gray-500">presentes hoje</p>
+      <div className="card">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="border-2 border-gray-200 bg-gray-50 p-3">
+            <p className="text-[10px] uppercase tracking-wide text-gray-500">Confirmados hoje</p>
+            <p className="text-lg font-bold text-brand-600">{checkedIn}</p>
+          </div>
+          <div className="border-2 border-gray-200 bg-gray-50 p-3">
+            <p className="text-[10px] uppercase tracking-wide text-gray-500">Total de ingressos</p>
+            <p className="text-lg font-bold text-gray-900">{approvedTickets}</p>
+          </div>
         </div>
+        <div className="mt-3 h-1.5 w-full overflow-hidden bg-gray-200">
+          <div className="h-full bg-brand-600 transition-all" style={{ width: `${percent}%` }} />
+        </div>
+        <p className="mt-1.5 text-[10px] text-gray-500">{percent}% check-in realizado hoje</p>
+
         {!scanning && (
-          <button className="btn-primary w-full sm:w-auto" onClick={() => { setScanning(true); setResult(null); }}>
+          <button className="btn-primary mt-4 w-full" onClick={() => { setScanning(true); setResult(null); }}>
             <CameraIcon size={16} /> Abrir scanner
           </button>
         )}
@@ -166,6 +195,24 @@ export function CheckinPanel({ eventId, checkedIn, approvedTickets }: { eventId:
           </ul>
         )}
       </div>
+
+      {recentCheckins.length > 0 && (
+        <div className="card space-y-3">
+          <h2 className="font-semibold text-gray-900">Últimos check-ins</h2>
+          <div className="grid gap-2">
+            {recentCheckins.map((c) => (
+              <div key={c.id} className="border-l-2 border-brand-600 bg-gray-50 p-3">
+                <span className="float-right text-xs font-semibold text-brand-600">✓</span>
+                <p className="text-sm font-semibold text-gray-900">{c.participantName}</p>
+                <p className="text-xs text-gray-500">
+                  {c.ticketNumber} · {new Date(c.checkedInAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                  {c.source === "MANUAL" ? " · manual" : ""}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

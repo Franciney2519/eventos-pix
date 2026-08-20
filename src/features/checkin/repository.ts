@@ -182,14 +182,14 @@ export async function listParticipantsForCheckin(supabase: DB, eventId: string):
   });
 }
 
-export async function listCheckinHistory(supabase: DB, eventId?: string) {
+export async function listCheckinHistory(supabase: DB, eventId?: string, limit = 200) {
   let query = supabase
     .from("checkins")
     .select(
       "*, tickets(ticket_number, attendee_name, orders(order_number, profiles:profiles!orders_user_id_profiles_fkey(full_name)))"
     )
     .order("checked_in_at", { ascending: false })
-    .limit(200);
+    .limit(limit);
 
   if (eventId) query = query.eq("event_id", eventId);
 
