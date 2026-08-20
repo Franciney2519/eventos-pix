@@ -57,18 +57,20 @@ export default async function MyTicketsPage() {
         <h2 className="mb-3 font-semibold text-gray-900">Detalhes</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {tickets.map((t) => (
-          <div key={t.id} className="card">
-            <div className="flex items-start justify-between">
+          <div key={t.id} className="card overflow-hidden !p-0">
+            <div className="border-b-2 border-gray-100 bg-gray-100 px-4 py-3 font-semibold text-gray-900">
+              {t.events?.name}
+            </div>
+            <div className="flex items-center justify-between px-4 py-3">
               <div>
-                <p className="font-semibold text-gray-900">{t.events?.name}</p>
-                {t.attendee_name && <p className="text-sm text-gray-600">{t.attendee_name}</p>}
-                <p className="font-mono text-xs text-gray-400">{t.ticket_number}</p>
+                <p className="font-mono text-[10px] text-gray-400">{t.ticket_number}</p>
+                <p className="text-sm font-semibold text-gray-900">{t.attendee_name ?? "Seu ingresso"}</p>
               </div>
               <TicketStatusBadge status={t.status} />
             </div>
 
             {t.events && (
-              <div className="mt-3 space-y-1 text-xs text-gray-500">
+              <div className="space-y-1 px-4 pb-3 text-xs text-gray-500">
                 <p className="flex items-center gap-1.5">
                   <CalendarDays size={12} /> {formatEventDate(t.events.event_date)}
                 </p>
@@ -81,9 +83,11 @@ export default async function MyTicketsPage() {
               </div>
             )}
 
-            <Link href={`/ticket/${t.token}`} className="btn-primary mt-4 w-full">
-              <QrCode size={16} /> Abrir ingresso
-            </Link>
+            <div className="border-t-2 border-gray-100 p-3">
+              <Link href={`/ticket/${t.token}`} className="btn-primary w-full">
+                <QrCode size={16} /> Abrir ingresso
+              </Link>
+            </div>
           </div>
         ))}
         </div>

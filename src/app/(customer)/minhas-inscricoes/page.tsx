@@ -35,13 +35,13 @@ export default async function MyOrdersPage({
         <p className="text-sm text-gray-500">Acompanhe o status das suas solicitações de compra.</p>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto">
+      <div className="flex gap-4 overflow-x-auto border-b-2 border-gray-100">
         {FILTERS.map((f) => (
           <Link
             key={f.value}
             href={f.value === "all" ? "/minhas-inscricoes" : `/minhas-inscricoes?status=${f.value}`}
-            className={`shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-medium ${
-              activeFilter === f.value ? "border-brand-600 bg-brand-50 text-brand-700" : "border-gray-200 text-gray-600"
+            className={`shrink-0 border-b-2 px-1 pb-2.5 text-sm font-semibold ${
+              activeFilter === f.value ? "border-brand-600 text-brand-600" : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
             {f.label}

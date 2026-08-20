@@ -38,22 +38,19 @@ export function EventCard({ event, availableSeats }: { event: EventRow; availabl
           </p>
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-gray-400">A partir de</p>
+        <div className="mt-4 flex divide-x-2 divide-gray-100 border-t-2 border-gray-100 pt-3 text-sm">
+          <div className="flex-1 pr-3">
+            <p className="text-[10px] uppercase tracking-wide text-gray-400">Disponíveis</p>
+            <p className="font-semibold text-gray-900">{soldOut ? "Esgotado" : availableSeats}</p>
+          </div>
+          <div className="flex-1 pl-3">
+            <p className="text-[10px] uppercase tracking-wide text-gray-400">Valor</p>
             <p className="font-semibold text-gray-900">{formatCurrencyBRL(event.ticket_price)}</p>
           </div>
-          <p className="text-xs text-gray-500">
-            {soldOut ? "Esgotado" : `${availableSeats} vaga(s)`}
-          </p>
         </div>
 
-        <Link
-          href={`/eventos/${event.slug}`}
-          className="btn-primary mt-4 w-full"
-          aria-disabled={soldOut}
-        >
-          {soldOut ? "Ver evento" : "Ver evento"}
+        <Link href={`/eventos/${event.slug}`} className="btn-primary mt-4 w-full" aria-disabled={soldOut}>
+          Ver evento
         </Link>
       </div>
     </div>
