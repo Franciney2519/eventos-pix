@@ -8,6 +8,7 @@ import {
   BarChart3,
   UserCog,
   Mail,
+  UserCircle,
 } from "lucide-react";
 import { SidebarShell, type SidebarItem } from "@/components/layout/sidebar-shell";
 import { requireRole } from "@/lib/auth/session";
@@ -24,6 +25,7 @@ const ITEMS: SidebarItem[] = [
   { href: "/admin/relatorios", label: "Relatórios", icon: <BarChart3 size={ICON_SIZE} /> },
   { href: "/admin/email-logs", label: "E-mails", icon: <Mail size={ICON_SIZE} /> },
   { href: "/admin/usuarios", label: "Usuários", icon: <UserCog size={ICON_SIZE} /> },
+  { href: "/admin/perfil", label: "Meu perfil", icon: <UserCircle size={ICON_SIZE} /> },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
