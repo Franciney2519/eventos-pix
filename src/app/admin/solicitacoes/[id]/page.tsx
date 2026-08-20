@@ -44,9 +44,9 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
     buyer?.phone && tickets.length > 0
       ? buildWhatsAppLink(
           buyer.phone,
-          `Olá, ${buyerFirstName}! Seu pagamento foi confirmado. Aqui está(ão) seu(s) ingresso(s):\n${tickets
-            .map((t) => ticketPublicUrl(appUrl, t.token))
-            .join("\n")}`
+          `Olá, ${buyerFirstName}! Seu pagamento foi confirmado. Aqui está(ão) seu(s) ingresso(s):\n\n${tickets
+            .map((t, i) => `Ingresso ${i + 1} (${t.ticket_number}):\n${ticketPublicUrl(appUrl, t.token)}`)
+            .join("\n\n")}\n\nO WhatsApp mostra a prévia só do primeiro link — role a mensagem, todos estão aí.`
         )
       : null;
 
