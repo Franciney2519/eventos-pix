@@ -182,6 +182,55 @@ export async function listParticipantsForCheckin(supabase: DB, eventId: string):
   });
 }
 
+export interface WalkInSale {
+  orderId: string;
+  orderNumber: string;
+  ticketId: string | null;
+  ticketNumber: string | null;
+  ticketToken: string | null;
+  ticketStatus: string | null;
+  buyerName: string;
+  buyerEmail: string;
+  buyerPhone: string | null;
+  paymentMethod: string | null;
+  soldByName: string | null;
+  createdAt: string;
+}
+
+export async function listWalkInSales(supabase: DB, eventId: string): Promise<WalkInSale[]> {
+  const { data, error } = await supabase
+    .from("orders")
+    .select(
+      "id, order_number, payment_method, created_at, profiles!orders_user_id_profiles_fkey(full_name, email, phone), tickets(id, ticket_number, token, status), sold_by_profile:profiles!orders_sold_by_fkey(full_name)"
+    )
+    .eq("event_id", eventId)
+    .eq("sale_channel", "WALK_IN")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  return (data ?? []).map((o) => {
+    const buyer = o.profiles as unknown as { full_name: string; email: string; phone: string | null } | null;
+    const ticket = (o.tickets as unknown as { id: string; ticket_number: string; token: string; status: string }[])?.[0] ?? null;
+    const seller = o.sold_by_profile as unknown as { full_name: string } | null;
+
+    return {
+      orderId: o.id,
+      orderNumber: o.order_number,
+      ticketId: ticket?.id ?? null,
+      ticketNumber: ticket?.ticket_number ?? null,
+      ticketToken: ticket?.token ?? null,
+      ticketStatus: ticket?.status ?? null,
+      buyerName: buyer?.full_name ?? "-",
+      buyerEmail: buyer?.email ?? "-",
+      buyerPhone: buyer?.phone ?? null,
+      paymentMethod: o.payment_method,
+      soldByName: seller?.full_name ?? null,
+      createdAt: o.created_at,
+    };
+  });
+}
+
 export async function listCheckinHistory(supabase: DB, eventId?: string, limit = 200) {
   let query = supabase
     .from("checkins")

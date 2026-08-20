@@ -7,12 +7,12 @@ import { sendTicketsIssuedEmail } from "@/emails/send";
 import type { ActionResult } from "@/features/auth/actions";
 
 export async function cancelTicketAction(ticketId: string): Promise<ActionResult> {
-  const admin = await requireRole("ADMIN");
+  const operator = await requireRole("ADMIN", "CHECKIN");
   const supabase = await createClient();
 
   const { error } = await supabase.rpc("cancel_ticket", {
     p_ticket_id: ticketId,
-    p_admin_id: admin.id,
+    p_admin_id: operator.id,
   });
 
   if (error) {
@@ -23,11 +23,12 @@ export async function cancelTicketAction(ticketId: string): Promise<ActionResult
   }
 
   revalidatePath("/admin/ingressos");
+  revalidatePath("/checkin/vendas-avulsas");
   return { ok: true };
 }
 
 export async function resendTicketEmailAction(orderId: string): Promise<ActionResult> {
-  await requireRole("ADMIN");
+  await requireRole("ADMIN", "CHECKIN");
 
   try {
     await sendTicketsIssuedEmail(orderId);
