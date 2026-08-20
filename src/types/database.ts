@@ -58,6 +58,9 @@ export interface OrderRow {
   rejected_by: string | null;
   rejection_reason: string | null;
   attendee_names: string[] | null;
+  sale_channel: "ONLINE" | "WALK_IN";
+  payment_method: "PIX" | "CASH" | null;
+  sold_by: string | null;
 }
 
 export interface PaymentProofRow {
