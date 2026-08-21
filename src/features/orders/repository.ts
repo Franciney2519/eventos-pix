@@ -6,6 +6,7 @@ type DB = SupabaseClient;
 
 export interface OrderWithEvent extends OrderRow {
   events: { name: string; slug: string; event_date: string; event_time: string; location: string } | null;
+  sold_by_profile?: { full_name: string } | null;
 }
 
 export async function listOrdersForUser(supabase: DB, userId: string): Promise<OrderWithEvent[]> {
@@ -22,7 +23,7 @@ export async function listOrdersForUser(supabase: DB, userId: string): Promise<O
 export async function getOrderById(supabase: DB, id: string): Promise<OrderWithEvent | null> {
   const { data, error } = await supabase
     .from("orders")
-    .select("*, events(name, slug, event_date, event_time, location)")
+    .select("*, events(name, slug, event_date, event_time, location), sold_by_profile:profiles!orders_sold_by_profiles_fkey(full_name)")
     .eq("id", id)
     .maybeSingle();
 

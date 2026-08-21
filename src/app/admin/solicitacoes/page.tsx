@@ -84,6 +84,7 @@ export default async function AdminOrdersPage({
                 <th className="px-5 py-3 font-medium">Qtd</th>
                 <th className="px-5 py-3 font-medium">Total</th>
                 <th className="px-5 py-3 font-medium">Data</th>
+                <th className="px-5 py-3 font-medium">Origem</th>
                 <th className="px-5 py-3 font-medium">Status</th>
                 <th className="px-5 py-3 font-medium"></th>
               </tr>
@@ -99,6 +100,13 @@ export default async function AdminOrdersPage({
                   <td className="px-5 py-3 text-gray-700">{o.quantity}</td>
                   <td className="px-5 py-3 text-gray-700">{formatCurrencyBRL(o.total_amount)}</td>
                   <td className="px-5 py-3 text-gray-500">{formatDateTime(o.created_at)}</td>
+                  <td className="px-5 py-3">
+                    {o.sale_channel === "WALK_IN" ? (
+                      <span className="badge-warning">Venda avulsa</span>
+                    ) : (
+                      <span className="badge-gray">Online</span>
+                    )}
+                  </td>
                   <td className="px-5 py-3">
                     <PaymentStatusBadge status={o.payment_status} />
                   </td>

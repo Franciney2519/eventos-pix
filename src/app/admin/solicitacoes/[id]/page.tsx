@@ -87,6 +87,22 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
       </div>
 
       <div className="card space-y-2">
+        <Row
+          label="Origem"
+          value={
+            order.sale_channel === "WALK_IN" ? (
+              <span className="badge-warning">Venda avulsa</span>
+            ) : (
+              <span className="badge-gray">Online (site)</span>
+            )
+          }
+        />
+        {order.sale_channel === "WALK_IN" && (
+          <>
+            <Row label="Forma de pagamento" value={order.payment_method === "PIX" ? "PIX" : "Dinheiro"} />
+            <Row label="Vendido por" value={order.sold_by_profile?.full_name ?? "-"} />
+          </>
+        )}
         <Row label="Quantidade" value={String(order.quantity)} />
         <Row label="Valor unitário" value={formatCurrencyBRL(order.unit_price)} />
         <Row label="Total" value={formatCurrencyBRL(order.total_amount)} />
@@ -98,6 +114,7 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
         {order.rejection_reason && <Row label="Motivo" value={order.rejection_reason} />}
       </div>
 
+      {order.sale_channel !== "WALK_IN" && (
       <div className="card space-y-4">
         <h2 className="font-semibold text-gray-900">Comprovante</h2>
         {proofsWithUrl.length === 0 ? (
@@ -124,6 +141,7 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
           ))
         )}
       </div>
+      )}
 
       {order.payment_status === "PENDING" && <OrderReviewActions orderId={order.id} />}
 
