@@ -25,6 +25,7 @@ export function OrderFlow({
   accentColor?: string;
 }) {
   const { show } = useToast();
+  const draftKey = `order-draft-${event.id}`;
   const [step, setStep] = useState<1 | 2>(1);
   const [quantity, setQuantity] = useState(1);
   const [attendeeNames, setAttendeeNames] = useState<string[]>([""]);
@@ -33,18 +34,51 @@ export function OrderFlow({
   const [fileError, setFileError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [hydrated, setHydrated] = useState(false);
 
   const max = Math.max(0, Math.min(event.max_tickets_per_order, availableSeats));
   const total = computeOrderTotal(event.ticket_price, quantity);
   const canOrder = event.status === "OPEN" && max > 0;
 
+  // Restore quantity/names/step if the person left to pay in their banking
+  // app and the browser reloaded the tab when they came back — otherwise
+  // they land back at step 1 with everything blank and have to start over.
+  // The file itself can't survive this (Files aren't serializable), so they
+  // do need to re-attach the proof, but at least the rest is preserved.
   useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(draftKey);
+      if (raw) {
+        const draft = JSON.parse(raw) as { step?: 1 | 2; quantity?: number; attendeeNames?: string[] };
+        if (draft.quantity) setQuantity(draft.quantity);
+        if (draft.attendeeNames) setAttendeeNames(draft.attendeeNames);
+        if (draft.step) setStep(draft.step);
+      }
+    } catch {
+      // ignore malformed/unavailable storage
+    }
+    setHydrated(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      sessionStorage.setItem(draftKey, JSON.stringify({ step, quantity, attendeeNames }));
+    } catch {
+      // ignore (e.g. private browsing with storage disabled)
+    }
+  }, [hydrated, draftKey, step, quantity, attendeeNames]);
+
+  useEffect(() => {
+    if (!hydrated) return;
     setAttendeeNames((prev) => {
       const next = prev.slice(0, quantity);
       while (next.length < quantity) next.push("");
       return next;
     });
-  }, [quantity]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quantity, hydrated]);
 
   const updateAttendeeName = (index: number, value: string) => {
     setAttendeeNames((prev) => {
