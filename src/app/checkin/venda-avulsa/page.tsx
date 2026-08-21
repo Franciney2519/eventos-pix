@@ -18,10 +18,10 @@ export default async function WalkInSalePage({ searchParams }: { searchParams: {
   const selectedEvent = events.find((e) => e.id === selectedEventId) ?? events[0]!;
   const stats = await getEventCheckinStats(supabase, selectedEventId);
 
-  // Fetch ticket price directly since listCheckinEvents doesn't select it.
+  // Fetch fields listCheckinEvents doesn't select.
   const { data: fullEvent } = await supabase
     .from("events")
-    .select("ticket_price")
+    .select("ticket_price, pix_key, pix_holder_name")
     .eq("id", selectedEventId)
     .single();
 
@@ -39,7 +39,12 @@ export default async function WalkInSalePage({ searchParams }: { searchParams: {
           Ingressos esgotados — não é possível registrar novas vendas.
         </div>
       ) : (
-        <WalkInSaleForm eventId={selectedEventId} ticketPrice={fullEvent?.ticket_price ?? 0} />
+        <WalkInSaleForm
+          eventId={selectedEventId}
+          ticketPrice={fullEvent?.ticket_price ?? 0}
+          pixKey={fullEvent?.pix_key ?? ""}
+          pixHolderName={fullEvent?.pix_holder_name ?? ""}
+        />
       )}
     </div>
   );

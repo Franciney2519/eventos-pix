@@ -10,6 +10,7 @@ import { formatCurrencyBRL, formatDateTime, formatEventDate, formatEventTime } f
 import { OrderReviewActions } from "@/features/orders/components/order-review-actions";
 import { ProofObservationForm } from "@/features/orders/components/proof-observation-form";
 import { ResendEmailButton } from "@/features/tickets/components/resend-email-button";
+import { CancelOrderButton } from "@/features/orders/components/cancel-order-button";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { ticketPublicUrl } from "@/lib/tickets/token";
 
@@ -52,9 +53,12 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
 
   return (
     <div className="max-w-3xl space-y-6">
-      <div>
-        <p className="text-sm text-gray-500">Solicitação</p>
-        <h1 className="text-2xl font-semibold text-gray-900">#{order.order_number}</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-sm text-gray-500">Solicitação</p>
+          <h1 className="text-2xl font-semibold text-gray-900">#{order.order_number}</h1>
+        </div>
+        {order.order_status !== "CANCELLED" && <CancelOrderButton orderId={order.id} />}
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">

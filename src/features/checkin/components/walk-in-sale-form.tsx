@@ -3,11 +3,21 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
-import { Banknote, CreditCard, Loader2, MessageCircle, CheckCircle2 } from "lucide-react";
+import { Banknote, CreditCard, Loader2, MessageCircle, CheckCircle2, Copy } from "lucide-react";
 import { createWalkInSaleAction, type WalkInSaleResult } from "@/features/checkin/actions";
 import { useToast } from "@/components/ui/toast";
 
-export function WalkInSaleForm({ eventId, ticketPrice }: { eventId: string; ticketPrice: number }) {
+export function WalkInSaleForm({
+  eventId,
+  ticketPrice,
+  pixKey,
+  pixHolderName,
+}: {
+  eventId: string;
+  ticketPrice: number;
+  pixKey: string;
+  pixHolderName: string;
+}) {
   const router = useRouter();
   const { show } = useToast();
   const [pending, startTransition] = useTransition();
@@ -17,6 +27,15 @@ export function WalkInSaleForm({ eventId, ticketPrice }: { eventId: string; tick
   const [paymentMethod, setPaymentMethod] = useState<"PIX" | "CASH">("CASH");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<WalkInSaleResult | null>(null);
+
+  const copyPixKey = async () => {
+    try {
+      await navigator.clipboard.writeText(pixKey);
+      show("Chave PIX copiada!", "success");
+    } catch {
+      show("Não foi possível copiar a chave", "error");
+    }
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,6 +140,26 @@ export function WalkInSaleForm({ eventId, ticketPrice }: { eventId: string; tick
             <CreditCard size={16} /> PIX
           </button>
         </div>
+
+        {paymentMethod === "PIX" && (
+          <div className="mt-3 border-2 border-gray-200 bg-gray-50 p-3">
+            <p className="text-xs text-gray-400">Chave PIX</p>
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <p className="break-all text-sm font-medium text-gray-900">{pixKey || "Não cadastrada para este evento"}</p>
+              {pixKey && (
+                <button type="button" onClick={copyPixKey} className="btn-secondary shrink-0 !px-3 !py-1.5 text-xs">
+                  <Copy size={12} /> Copiar
+                </button>
+              )}
+            </div>
+            {pixHolderName && (
+              <>
+                <p className="mt-2 text-xs text-gray-400">Favorecido</p>
+                <p className="text-sm font-medium text-gray-900">{pixHolderName}</p>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="border-t-2 border-gray-100 pt-3 text-sm text-gray-500">

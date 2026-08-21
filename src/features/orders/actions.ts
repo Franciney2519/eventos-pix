@@ -186,6 +186,51 @@ export async function rejectOrderAction(formData: FormData): Promise<ActionResul
   return { ok: true };
 }
 
+/**
+ * Cancels a request/order regardless of its current status — including
+ * already-APPROVED ones (e.g. a duplicate submission that got approved
+ * twice by mistake). Any AVAILABLE ticket it issued is cancelled too,
+ * which frees the seat back up since capacity checks filter on
+ * payment_status = 'APPROVED' and this flips it to 'REJECTED'.
+ */
+export async function cancelOrderAction(formData: FormData): Promise<ActionResult> {
+  const admin = await requireRole("ADMIN");
+
+  const parsed = rejectOrderSchema.safeParse({
+    orderId: formData.get("orderId"),
+    reason: formData.get("reason"),
+  });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Informe o motivo" };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("cancel_order", {
+    p_order_id: parsed.data.orderId,
+    p_admin_id: admin.id,
+    p_reason: parsed.data.reason,
+  });
+
+  if (error) {
+    if (error.message.includes("ORDER_ALREADY_CANCELLED")) {
+      return { ok: false, error: "Este pedido já está cancelado" };
+    }
+    return { ok: false, error: rpcErrorMessage(error.message) };
+  }
+
+  try {
+    await sendOrderRejectedEmail(parsed.data.orderId);
+  } catch (err) {
+    console.error("Failed to send order-cancelled email for order", parsed.data.orderId, err);
+  }
+
+  revalidatePath("/admin/solicitacoes");
+  revalidatePath(`/admin/solicitacoes/${parsed.data.orderId}`);
+  revalidatePath("/admin/ingressos");
+  revalidatePath("/minhas-inscricoes");
+  return { ok: true };
+}
+
 export async function addProofObservationAction(
   proofId: string,
   observation: string
