@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { Download, Share2 } from "lucide-react";
-import { formatEventDate } from "@/lib/format";
+import { formatCurrencyBRL, formatEventDate } from "@/lib/format";
 
 interface ExecutiveSummaryData {
   eventName: string;
@@ -14,6 +14,7 @@ interface ExecutiveSummaryData {
   available: number;
   onlineOrders: number;
   walkInOrders: number;
+  confirmedRevenue: number;
 }
 
 export function ExecutiveSummaryCard({ data }: { data: ExecutiveSummaryData }) {
@@ -87,6 +88,10 @@ export function ExecutiveSummaryCard({ data }: { data: ExecutiveSummaryData }) {
           <SummaryCell label="Disponíveis" value={data.available} />
           <SummaryCell label="Vendidos online" value={data.onlineOrders} />
           <SummaryCell label="Vendidos avulsos" value={data.walkInOrders} />
+        </div>
+        <div className="bg-gray-50 px-6 py-4">
+          <p className="text-xs font-medium text-gray-500">Receita confirmada</p>
+          <p className="mt-1 text-2xl font-semibold text-gray-900">{formatCurrencyBRL(data.confirmedRevenue)}</p>
         </div>
       </div>
 

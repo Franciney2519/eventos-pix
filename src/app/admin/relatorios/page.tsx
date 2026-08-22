@@ -82,6 +82,7 @@ export default async function AdminReportsPage({
               available: eventIndicators.remainingSeats,
               onlineOrders: eventIndicators.onlineOrders,
               walkInOrders: eventIndicators.walkInOrders,
+              confirmedRevenue: eventIndicators.confirmedRevenue,
             }}
           />
         ) : (
