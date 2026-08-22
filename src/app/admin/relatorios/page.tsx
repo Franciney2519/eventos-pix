@@ -1,7 +1,7 @@
 import { Download } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { listAllEvents } from "@/features/events/repository";
-import { getGlobalIndicators, getEventIndicators } from "@/features/reports/repository";
+import { getGlobalIndicators, getEventIndicators, getStaffCount, getParticipantCount } from "@/features/reports/repository";
 import { formatCurrencyBRL } from "@/lib/format";
 import { ExecutiveSummaryCard } from "./ExecutiveSummaryCard";
 
@@ -20,7 +20,12 @@ export default async function AdminReportsPage({
   searchParams: { eventId?: string; summaryEventId?: string };
 }) {
   const supabase = await createClient();
-  const [indicators, events] = await Promise.all([getGlobalIndicators(supabase), listAllEvents(supabase)]);
+  const [indicators, events, staffCount, participantCount] = await Promise.all([
+    getGlobalIndicators(supabase),
+    listAllEvents(supabase),
+    getStaffCount(supabase),
+    getParticipantCount(supabase),
+  ]);
   const attendanceRate = indicators.totalTickets > 0 ? Math.round((indicators.checkins / indicators.totalTickets) * 100) : 0;
 
   const summaryEventId = searchParams.summaryEventId ?? events[0]?.id;
@@ -83,6 +88,8 @@ export default async function AdminReportsPage({
               onlineOrders: eventIndicators.onlineOrders,
               walkInOrders: eventIndicators.walkInOrders,
               confirmedRevenue: eventIndicators.confirmedRevenue,
+              registeredUsers: participantCount,
+              staffCount,
             }}
           />
         ) : (

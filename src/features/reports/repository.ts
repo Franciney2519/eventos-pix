@@ -80,6 +80,24 @@ export async function getGlobalIndicators(supabase: DB) {
   };
 }
 
+/** Staff working the event: admins + check-in operators. */
+export async function getStaffCount(supabase: DB): Promise<number> {
+  const { count } = await supabase
+    .from("profiles")
+    .select("id", { count: "exact", head: true })
+    .in("role", ["ADMIN", "CHECKIN"]);
+  return count ?? 0;
+}
+
+/** Registered participants only — excludes admins and check-in staff. */
+export async function getParticipantCount(supabase: DB): Promise<number> {
+  const { count } = await supabase
+    .from("profiles")
+    .select("id", { count: "exact", head: true })
+    .eq("role", "CUSTOMER");
+  return count ?? 0;
+}
+
 export async function listRecentOrders(supabase: DB, limit = 8) {
   const { data } = await supabase
     .from("orders")

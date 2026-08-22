@@ -15,6 +15,8 @@ interface ExecutiveSummaryData {
   onlineOrders: number;
   walkInOrders: number;
   confirmedRevenue: number;
+  registeredUsers: number;
+  staffCount: number;
 }
 
 export function ExecutiveSummaryCard({ data }: { data: ExecutiveSummaryData }) {
@@ -45,25 +47,31 @@ export function ExecutiveSummaryCard({ data }: { data: ExecutiveSummaryData }) {
     try {
       const dataUrl = await renderImage();
       if (!dataUrl) return;
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      const file = new File([blob], `resumo-${data.eventName.toLowerCase().replace(/\s+/g, "-")}.png`, {
-        type: "image/png",
-      });
+      const fileName = `resumo-${data.eventName.toLowerCase().replace(/\s+/g, "-")}.png`;
+      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: `Resumo — ${data.eventName}`,
-        });
-      } else {
-        // Fallback: no file-sharing support (desktop browsers). Just download it
-        // so the person can attach it manually in WhatsApp Web.
-        const link = document.createElement("a");
-        link.download = file.name;
-        link.href = dataUrl;
-        link.click();
+      if (isMobile) {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const file = new File([blob], fileName, { type: "image/png" });
+
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: `Resumo — ${data.eventName}` });
+          return;
+        }
       }
+
+      // Desktop (or no file-sharing support): download the image and open
+      // WhatsApp Web's contact picker so the person just attaches it there —
+      // same pattern used for the wa.me links elsewhere in the admin.
+      const link = document.createElement("a");
+      link.download = fileName;
+      link.href = dataUrl;
+      link.click();
+      window.open(
+        `https://wa.me/?text=${encodeURIComponent(`Resumo do evento ${data.eventName} — anexe a imagem ${fileName} baixada.`)}`,
+        "_blank"
+      );
     } catch (err) {
       if ((err as DOMException)?.name !== "AbortError") {
         console.error(err);
@@ -88,10 +96,18 @@ export function ExecutiveSummaryCard({ data }: { data: ExecutiveSummaryData }) {
           <SummaryCell label="Disponíveis" value={data.available} />
           <SummaryCell label="Vendidos online" value={data.onlineOrders} />
           <SummaryCell label="Vendidos avulsos" value={data.walkInOrders} />
+          <SummaryCell label="Participantes cadastrados" value={data.registeredUsers} />
+          <SummaryCell label="Equipe do evento" value={data.staffCount} />
         </div>
-        <div className="bg-gray-50 px-6 py-4">
-          <p className="text-xs font-medium text-gray-500">Receita confirmada</p>
-          <p className="mt-1 text-2xl font-semibold text-gray-900">{formatCurrencyBRL(data.confirmedRevenue)}</p>
+        <div className="grid grid-cols-2 gap-px bg-gray-100">
+          <div className="bg-gray-50 px-6 py-4">
+            <p className="text-xs font-medium text-gray-500">Total de cadastros</p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900">{data.registeredUsers + data.staffCount}</p>
+          </div>
+          <div className="bg-gray-50 px-6 py-4">
+            <p className="text-xs font-medium text-gray-500">Receita confirmada</p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900">{formatCurrencyBRL(data.confirmedRevenue)}</p>
+          </div>
         </div>
       </div>
 
