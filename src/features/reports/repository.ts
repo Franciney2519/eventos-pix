@@ -13,12 +13,14 @@ export interface EventIndicators {
   remainingSeats: number;
   confirmedRevenue: number;
   attendanceRate: number;
+  onlineOrders: number;
+  walkInOrders: number;
 }
 
 export async function getEventIndicators(supabase: DB, eventId: string): Promise<EventIndicators> {
   const [eventRes, ordersRes, ticketsRes, checkinsRes] = await Promise.all([
     supabase.from("events").select("capacity").eq("id", eventId).single(),
-    supabase.from("orders").select("quantity, total_amount, payment_status").eq("event_id", eventId),
+    supabase.from("orders").select("quantity, total_amount, payment_status, sale_channel").eq("event_id", eventId),
     supabase.from("tickets").select("id", { count: "exact", head: true }).eq("event_id", eventId),
     supabase.from("checkins").select("id", { count: "exact", head: true }).eq("event_id", eventId),
   ]);
@@ -33,6 +35,8 @@ export async function getEventIndicators(supabase: DB, eventId: string): Promise
   const confirmedRevenue = approvedOrders.reduce((s, o) => s + Number(o.total_amount), 0);
   const ticketsIssued = ticketsRes.count ?? 0;
   const checkins = checkinsRes.count ?? 0;
+  const onlineOrders = approvedOrders.filter((o) => o.sale_channel !== "WALK_IN").length;
+  const walkInOrders = approvedOrders.filter((o) => o.sale_channel === "WALK_IN").length;
 
   return {
     capacity,
@@ -44,6 +48,8 @@ export async function getEventIndicators(supabase: DB, eventId: string): Promise
     remainingSeats: Math.max(0, capacity - approvedPayments),
     confirmedRevenue,
     attendanceRate: ticketsIssued > 0 ? Math.round((checkins / ticketsIssued) * 100) : 0,
+    onlineOrders,
+    walkInOrders,
   };
 }
 

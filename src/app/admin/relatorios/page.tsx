@@ -1,8 +1,9 @@
 import { Download } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { listAllEvents } from "@/features/events/repository";
-import { getGlobalIndicators } from "@/features/reports/repository";
+import { getGlobalIndicators, getEventIndicators } from "@/features/reports/repository";
 import { formatCurrencyBRL } from "@/lib/format";
+import { ExecutiveSummaryCard } from "./ExecutiveSummaryCard";
 
 export const dynamic = "force-dynamic";
 
@@ -13,10 +14,18 @@ const REPORTS = [
   { type: "checkins", label: "Check-ins" },
 ] as const;
 
-export default async function AdminReportsPage({ searchParams }: { searchParams: { eventId?: string } }) {
+export default async function AdminReportsPage({
+  searchParams,
+}: {
+  searchParams: { eventId?: string; summaryEventId?: string };
+}) {
   const supabase = await createClient();
   const [indicators, events] = await Promise.all([getGlobalIndicators(supabase), listAllEvents(supabase)]);
   const attendanceRate = indicators.totalTickets > 0 ? Math.round((indicators.checkins / indicators.totalTickets) * 100) : 0;
+
+  const summaryEventId = searchParams.summaryEventId ?? events[0]?.id;
+  const summaryEvent = events.find((e) => e.id === summaryEventId);
+  const eventIndicators = summaryEvent ? await getEventIndicators(supabase, summaryEvent.id) : null;
 
   return (
     <div className="space-y-6">
@@ -38,6 +47,46 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
         />
         <Stat label="Check-ins" value={indicators.checkins} />
         <AttendanceStat rate={attendanceRate} checkins={indicators.checkins} total={indicators.totalTickets} />
+      </div>
+
+      <div className="card space-y-4">
+        <div>
+          <h2 className="font-semibold text-gray-900">Resumo executivo por evento</h2>
+          <p className="text-xs text-gray-500">Gere uma imagem resumida para compartilhar no WhatsApp.</p>
+        </div>
+        <form method="get" className="flex max-w-md items-end gap-2">
+          <div className="flex-1">
+            <label htmlFor="summaryEventId" className="label">
+              Evento
+            </label>
+            <select id="summaryEventId" name="summaryEventId" defaultValue={summaryEvent?.id ?? ""} className="input">
+              {events.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button type="submit" className="btn-secondary">
+            Ver
+          </button>
+        </form>
+        {summaryEvent && eventIndicators ? (
+          <ExecutiveSummaryCard
+            data={{
+              eventName: summaryEvent.name,
+              eventDate: summaryEvent.event_date,
+              capacity: eventIndicators.capacity,
+              sold: eventIndicators.approvedPayments,
+              pending: eventIndicators.pendingPayments,
+              available: eventIndicators.remainingSeats,
+              onlineOrders: eventIndicators.onlineOrders,
+              walkInOrders: eventIndicators.walkInOrders,
+            }}
+          />
+        ) : (
+          <p className="text-sm text-gray-500">Nenhum evento cadastrado.</p>
+        )}
       </div>
 
       <div className="card space-y-4">
