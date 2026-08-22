@@ -35,8 +35,12 @@ export async function getEventIndicators(supabase: DB, eventId: string): Promise
   const confirmedRevenue = approvedOrders.reduce((s, o) => s + Number(o.total_amount), 0);
   const ticketsIssued = ticketsRes.count ?? 0;
   const checkins = checkinsRes.count ?? 0;
-  const onlineOrders = approvedOrders.filter((o) => o.sale_channel !== "WALK_IN").length;
-  const walkInOrders = approvedOrders.filter((o) => o.sale_channel === "WALK_IN").length;
+  const onlineOrders = approvedOrders
+    .filter((o) => o.sale_channel !== "WALK_IN")
+    .reduce((s, o) => s + o.quantity, 0);
+  const walkInOrders = approvedOrders
+    .filter((o) => o.sale_channel === "WALK_IN")
+    .reduce((s, o) => s + o.quantity, 0);
 
   return {
     capacity,

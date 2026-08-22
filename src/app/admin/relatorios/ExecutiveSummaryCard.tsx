@@ -85,8 +85,8 @@ export function ExecutiveSummaryCard({ data }: { data: ExecutiveSummaryData }) {
           <SummaryCell label="Vendidos" value={data.sold} />
           <SummaryCell label="Aguardando aprovação" value={data.pending} />
           <SummaryCell label="Disponíveis" value={data.available} />
-          <SummaryCell label="Compras online" value={data.onlineOrders} />
-          <SummaryCell label="Compras avulsas" value={data.walkInOrders} />
+          <SummaryCell label="Vendidos online" value={data.onlineOrders} />
+          <SummaryCell label="Vendidos avulsos" value={data.walkInOrders} />
         </div>
       </div>
 
