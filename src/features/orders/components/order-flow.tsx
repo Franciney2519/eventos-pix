@@ -40,19 +40,35 @@ export function OrderFlow({
   const total = computeOrderTotal(event.ticket_price, quantity);
   const canOrder = event.status === "OPEN" && max > 0;
 
-  // Restore quantity/names/step if the person left to pay in their banking
-  // app and the browser reloaded the tab when they came back — otherwise
-  // they land back at step 1 with everything blank and have to start over.
-  // The file itself can't survive this (Files aren't serializable), so they
-  // do need to re-attach the proof, but at least the rest is preserved.
+  // Restore quantity/names/step/proof if the person left to pay in their
+  // banking app and the browser reloaded the tab when they came back —
+  // otherwise they land back at step 1 with everything blank (or, on some
+  // mobile browsers, the attached photo silently vanishes right before they
+  // submit) and have to start over. The proof file is persisted as a base64
+  // data URL so it survives a tab reload/remount, which is what mobile
+  // browsers do when the native camera/gallery picker backgrounds the tab
+  // under memory pressure.
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(draftKey);
       if (raw) {
-        const draft = JSON.parse(raw) as { step?: 1 | 2; quantity?: number; attendeeNames?: string[] };
+        const draft = JSON.parse(raw) as {
+          step?: 1 | 2;
+          quantity?: number;
+          attendeeNames?: string[];
+          proof?: { name: string; type: string; dataUrl: string };
+        };
         if (draft.quantity) setQuantity(draft.quantity);
         if (draft.attendeeNames) setAttendeeNames(draft.attendeeNames);
         if (draft.step) setStep(draft.step);
+        if (draft.proof) {
+          fetch(draft.proof.dataUrl)
+            .then((res) => res.blob())
+            .then((blob) => setFile(new File([blob], draft.proof!.name, { type: draft.proof!.type })))
+            .catch(() => {
+              // ignore — user will just need to re-attach
+            });
+        }
       }
     } catch {
       // ignore malformed/unavailable storage
@@ -63,8 +79,39 @@ export function OrderFlow({
 
   useEffect(() => {
     if (!hydrated) return;
+    if (!file) {
+      try {
+        const raw = sessionStorage.getItem(draftKey);
+        if (raw) {
+          const draft = JSON.parse(raw);
+          delete draft.proof;
+          sessionStorage.setItem(draftKey, JSON.stringify(draft));
+        }
+      } catch {
+        // ignore
+      }
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const raw = sessionStorage.getItem(draftKey);
+        const draft = raw ? JSON.parse(raw) : {};
+        draft.proof = { name: file.name, type: file.type, dataUrl: reader.result };
+        sessionStorage.setItem(draftKey, JSON.stringify(draft));
+      } catch {
+        // ignore (e.g. private browsing with storage disabled, or quota exceeded for large files)
+      }
+    };
+    reader.readAsDataURL(file);
+  }, [hydrated, draftKey, file]);
+
+  useEffect(() => {
+    if (!hydrated) return;
     try {
-      sessionStorage.setItem(draftKey, JSON.stringify({ step, quantity, attendeeNames }));
+      const raw = sessionStorage.getItem(draftKey);
+      const draft = raw ? JSON.parse(raw) : {};
+      sessionStorage.setItem(draftKey, JSON.stringify({ ...draft, step, quantity, attendeeNames }));
     } catch {
       // ignore (e.g. private browsing with storage disabled)
     }

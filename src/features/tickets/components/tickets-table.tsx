@@ -2,6 +2,7 @@
 
 import { TicketStatusBadge } from "@/components/ui/status-badge";
 import { CancelTicketButton } from "@/features/tickets/components/cancel-ticket-button";
+import { EditAttendeeName } from "@/features/tickets/components/edit-attendee-name";
 import { formatDateTime } from "@/lib/format";
 
 export interface TicketRowData {
@@ -33,7 +34,9 @@ export function TicketsTable({ tickets }: { tickets: TicketRowData[] }) {
           {tickets.map((t) => (
             <tr key={t.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
               <td className="px-5 py-3 font-mono font-medium text-gray-900">{t.ticket_number}</td>
-              <td className="px-5 py-3 text-gray-700">{t.participantName}</td>
+              <td className="px-5 py-3 text-gray-700">
+                <EditAttendeeName ticketId={t.id} name={t.participantName} />
+              </td>
               <td className="px-5 py-3 text-gray-700">{t.eventName}</td>
               <td className="px-5 py-3 text-gray-700">{t.orderNumber}</td>
               <td className="px-5 py-3">

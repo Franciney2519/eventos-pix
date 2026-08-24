@@ -27,6 +27,29 @@ export async function cancelTicketAction(ticketId: string): Promise<ActionResult
   return { ok: true };
 }
 
+export async function updateTicketAttendeeNameAction(
+  ticketId: string,
+  attendeeName: string
+): Promise<ActionResult> {
+  await requireRole("ADMIN");
+  const supabase = await createClient();
+
+  const trimmed = attendeeName.trim();
+  if (trimmed.length < 2) {
+    return { ok: false, error: "Informe um nome válido" };
+  }
+
+  const { error } = await supabase.from("tickets").update({ attendee_name: trimmed }).eq("id", ticketId);
+
+  if (error) {
+    console.error("Failed to update ticket attendee name", ticketId, error);
+    return { ok: false, error: "Não foi possível atualizar o nome" };
+  }
+
+  revalidatePath("/admin/ingressos");
+  return { ok: true };
+}
+
 export async function resendTicketEmailAction(orderId: string): Promise<ActionResult> {
   await requireRole("ADMIN", "CHECKIN");
 

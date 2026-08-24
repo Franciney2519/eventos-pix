@@ -97,7 +97,7 @@ export function ExecutiveSummaryCard({ data }: { data: ExecutiveSummaryData }) {
           <SummaryCell label="Vendidos online" value={data.onlineOrders} />
           <SummaryCell label="Vendidos avulsos" value={data.walkInOrders} />
           <SummaryCell label="Participantes cadastrados" value={data.registeredUsers} />
-          <SummaryCell label="Equipe do evento" value={data.staffCount} />
+          <SummaryCell label="Equipe do evento Credencial" value={data.staffCount} />
         </div>
         <div className="grid grid-cols-2 gap-px bg-gray-100">
           <div className="bg-gray-50 px-6 py-4">
