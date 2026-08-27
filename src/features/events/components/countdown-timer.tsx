@@ -14,7 +14,15 @@ function getTimeLeft(targetIso: string) {
   };
 }
 
-export function CountdownTimer({ targetIso, accentColor = "#FD3A2D" }: { targetIso: string; accentColor?: string }) {
+export function CountdownTimer({
+  targetIso,
+  accentColor = "#FD3A2D",
+  compact = false,
+}: {
+  targetIso: string;
+  accentColor?: string;
+  compact?: boolean;
+}) {
   const [timeLeft, setTimeLeft] = useState<ReturnType<typeof getTimeLeft>>(() => getTimeLeft(targetIso));
 
   useEffect(() => {
@@ -30,6 +38,27 @@ export function CountdownTimer({ targetIso, accentColor = "#FD3A2D" }: { targetI
     { label: "min", value: timeLeft.minutes },
     { label: "seg", value: timeLeft.seconds },
   ];
+
+  if (compact) {
+    return (
+      <div
+        className="rounded-lg border px-3 py-2"
+        style={{ borderColor: accentColor, backgroundColor: `${accentColor}0d` }}
+      >
+        <p className="mb-1 text-center text-[10px] font-semibold uppercase tracking-wide" style={{ color: accentColor }}>
+          Faltam para o evento
+        </p>
+        <div className="grid grid-cols-4 gap-1 text-center">
+          {units.map((u) => (
+            <div key={u.label}>
+              <p className="text-sm font-bold tabular-nums text-gray-900">{String(u.value).padStart(2, "0")}</p>
+              <p className="text-[9px] uppercase text-gray-500">{u.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border p-4" style={{ borderColor: accentColor, backgroundColor: `${accentColor}0d` }}>

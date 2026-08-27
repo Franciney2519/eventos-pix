@@ -4,9 +4,11 @@ import { CalendarDays, Clock, MapPin } from "lucide-react";
 import type { EventRow } from "@/types/database";
 import { formatCurrencyBRL, formatEventDate, formatEventTime } from "@/lib/format";
 import { EventStatusBadge } from "@/components/ui/status-badge";
+import { CountdownTimer } from "./countdown-timer";
 
 export function EventCard({ event, availableSeats }: { event: EventRow; availableSeats: number }) {
   const soldOut = availableSeats <= 0;
+  const eventStartIso = `${event.event_date}T${event.event_time}-04:00`;
 
   return (
     <div className="card flex flex-col overflow-hidden !p-0">
@@ -36,6 +38,10 @@ export function EventCard({ event, availableSeats }: { event: EventRow; availabl
           <p className="flex items-center gap-1.5">
             <MapPin size={14} /> {event.location}
           </p>
+        </div>
+
+        <div className="mt-3">
+          <CountdownTimer targetIso={eventStartIso} compact />
         </div>
 
         <div className="mt-4 flex divide-x-2 divide-gray-100 border-t-2 border-gray-100 pt-3 text-sm">
