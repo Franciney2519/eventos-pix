@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { EventRow } from "@/types/database";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type DB = SupabaseClient;
 
@@ -37,16 +38,22 @@ export async function getEventById(supabase: DB, id: string): Promise<EventRow |
   return data;
 }
 
-/** Sum of ticket quantities from APPROVED orders — the seats actually reserved. */
-export async function getApprovedTicketQuantity(supabase: DB, eventId: string): Promise<number> {
-  const { data, error } = await supabase
+/**
+ * Sum of ticket quantities from APPROVED orders — the seats actually reserved.
+ * Uses the admin client because this powers public availability counts, and
+ * the `orders` RLS policy only lets a user see their own orders (or staff see
+ * all), which would silently return 0 rows for anonymous/customer visitors.
+ */
+export async function getApprovedTicketQuantity(_supabase: DB, eventId: string): Promise<number> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
     .from("orders")
     .select("quantity")
     .eq("event_id", eventId)
     .eq("payment_status", "APPROVED");
 
   if (error) throw error;
-  return (data ?? []).reduce((sum, o) => sum + o.quantity, 0);
+  return (data ?? []).reduce((sum, o: { quantity: number }) => sum + o.quantity, 0);
 }
 
 export async function createEvent(supabase: DB, input: Partial<EventRow>): Promise<EventRow> {
