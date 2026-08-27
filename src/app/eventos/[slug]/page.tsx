@@ -12,6 +12,8 @@ import { CountdownTimer } from "@/features/events/components/countdown-timer";
 export const dynamic = "force-dynamic";
 
 const ACCENT_COLOR = "#FD3A2D";
+const HOW_TO_BUY_VIDEO_URL =
+  "https://fyigxbhnjrbecokstoxv.supabase.co/storage/v1/object/public/help-videos/como-comprar-ingresso.mp4";
 
 export default async function EventDetailPage({ params }: { params: { slug: string } }) {
   const supabase = await createClient();
@@ -63,6 +65,14 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
             {event.description && (
               <div className="card mt-6 whitespace-pre-line text-sm text-gray-700">{event.description}</div>
             )}
+
+            <div className="card mt-6">
+              <h2 className="mb-3 font-semibold text-gray-900">Como se cadastrar e comprar seu ingresso</h2>
+              <video controls preload="metadata" className="w-full rounded-lg" playsInline>
+                <source src={HOW_TO_BUY_VIDEO_URL} type="video/mp4" />
+                Seu navegador não suporta a exibição deste vídeo.
+              </video>
+            </div>
 
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
               <div className="card !p-4" style={{ borderColor: ACCENT_COLOR }}>
