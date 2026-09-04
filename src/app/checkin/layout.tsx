@@ -1,4 +1,4 @@
-import { ScanLine, History, Users, Banknote, Receipt } from "lucide-react";
+import { ScanLine, History, Users, Banknote, Receipt, ArrowLeft } from "lucide-react";
 import { SidebarShell, type SidebarItem } from "@/components/layout/sidebar-shell";
 import { requireRole } from "@/lib/auth/session";
 
@@ -12,10 +12,16 @@ const ITEMS: SidebarItem[] = [
   { href: "/checkin/historico", label: "Histórico de check-ins", icon: <History size={ICON_SIZE} /> },
 ];
 
+const ADMIN_ITEMS: SidebarItem[] = [
+  { href: "/admin", label: "Voltar ao Admin", icon: <ArrowLeft size={ICON_SIZE} /> },
+  ...ITEMS,
+];
+
 export default async function CheckinLayout({ children }: { children: React.ReactNode }) {
-  await requireRole("ADMIN", "CHECKIN");
+  const { profile } = await requireRole("ADMIN", "CHECKIN");
+  const items = profile.role === "ADMIN" ? ADMIN_ITEMS : ITEMS;
   return (
-    <SidebarShell items={ITEMS} title="Check-in">
+    <SidebarShell items={items} title="Check-in">
       {children}
     </SidebarShell>
   );

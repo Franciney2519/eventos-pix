@@ -11,6 +11,7 @@ import {
   UserCircle,
   Banknote,
   Receipt,
+  History,
 } from "lucide-react";
 import { SidebarShell, type SidebarItem } from "@/components/layout/sidebar-shell";
 import { requireRole } from "@/lib/auth/session";
@@ -25,7 +26,8 @@ const ITEMS: SidebarItem[] = [
   { href: "/checkin/venda-avulsa", label: "Venda avulsa", icon: <Banknote size={ICON_SIZE} /> },
   { href: "/checkin/vendas-avulsas", label: "Histórico de vendas avulsas", icon: <Receipt size={ICON_SIZE} /> },
   { href: "/admin/participantes", label: "Participantes", icon: <Users size={ICON_SIZE} /> },
-  { href: "/admin/checkins", label: "Check-ins", icon: <ScanLine size={ICON_SIZE} /> },
+  { href: "/checkin", label: "Check-in", icon: <ScanLine size={ICON_SIZE} /> },
+  { href: "/admin/checkins", label: "Histórico de check-ins", icon: <History size={ICON_SIZE} /> },
   { href: "/admin/relatorios", label: "Relatórios", icon: <BarChart3 size={ICON_SIZE} /> },
   { href: "/admin/email-logs", label: "E-mails", icon: <Mail size={ICON_SIZE} /> },
   { href: "/admin/usuarios", label: "Usuários", icon: <UserCog size={ICON_SIZE} /> },
